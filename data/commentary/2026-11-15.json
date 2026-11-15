@@ -1,6 +1,17 @@
 {
  "date": "2026-11-15",
- "order": ["W4400490766","W2805780137","W4400480772","W7225127387","W4286895426","W7125966085","W4399758823","W7161720390","W4390843425","W4417398541"],
+ "order": [
+  "W4400490766",
+  "W2805780137",
+  "W4400480772",
+  "W7225127387",
+  "W4286895426",
+  "W7125966085",
+  "W4399758823",
+  "W7161720390",
+  "W4390843425",
+  "W4417398541"
+ ],
  "notes": {
   "W4400490766": "Serial blood samples taken yearly for up to 15 years before diagnosis let them time when each driver mutation arrived and measure its fitness. The first drivers appear decades early and grow slowly. Later drivers carry up to 100-fold larger advantages and can take over the whole blood years before leukaemia shows. Pre-cancer turns out to follow simple, quantifiable evolutionary rules.",
   "W2805780137": "A formal model of why smart people keep a wrong model despite plenty of data: if you only attend to the variables your model says matter, the evidence that would refute it never registers. It explains stable errors without assuming irrationality. It applies directly to scientific blind spots, clinical habits and markets.",
@@ -14,5 +25,37 @@
   "W4417398541": "A consensus atlas of 1.8 million nuclei across human, macaque and marmoset basal ganglia. It identifies 61 cell types conserved over 76 million years and pins psychiatric and neurodegenerative risk genes to specific cell populations. Spatial identity turns out to be more conserved than the classic D1/D2 split."
  },
  "thread": "Two of today's picks are about systems that hide their own failure modes. In the leukaemia paper, blood looks normal while a slow evolutionary takeover runs for decades. In the insurance paper, markets look stable while risk quietly pools in fragile insurers. The attention paper supplies the reason both go unseen: the signal never registers if you aren't tracking the variable that carries it.",
- "taste": null
+ "taste": null,
+ "fundamentals": {
+  "order": [
+   "W4416048293",
+   "W4417295272",
+   "W7225771350",
+   "W4411476832",
+   "W7154510137"
+  ],
+  "notes": {
+   "W4416048293": "Shifts: Huang and Yang's 1957 formula for a dilute Fermi gas was a physicist's prediction → now a theorem, valid for a broad class of interactions through the scattering length alone. A 68-year-old universality claim now has a proof.",
+   "W4417295272": "Shifts: how many uses it takes to learn an unknown quantum process to a given precision (in the standard diamond-distance metric) was a long-standing open question → now answered optimally. This is a basic limit on what we can know about a quantum device.",
+   "W7225771350": "Shifts: ecosystem tipping points described phenomenologically → derived from local trade-offs between individual plants using phase-transition theory. Macroscopic collapse becomes a consequence of microscopic rules, the same move statistical physics made for matter.",
+   "W4411476832": "Shifts: microbial community dynamics assumed irreducibly complex, driven by myriad interactions → observable dynamics turn out to be low-dimensional, with linear scaling. That would explain why control from a handful of measurements works at all.",
+   "W7154510137": "Shifts: the universal anomalous scaling seen in QCD power corrections was an empirical regularity → traced to its operator origin in quantum field theory via light-ray operators. A pattern gets a mechanism, which is what turns a fit into physics."
+  }
+ },
+ "upstream": {
+  "title": "Microscopic detail washes out into few variables",
+  "principle": "Several of today's papers turn out to be the same claim: complex systems are governed by far fewer effective variables than their parts suggest. A dilute Fermi gas's energy depends on the interaction only through one number, the scattering length. A decade of blood evolution before leukaemia follows a few simple rules of mutation timing and fitness. Microbial communities with countless interactions trace low-dimensional paths. A dryland ecosystem's collapse is a phase transition set by local trade-offs. This compression is why science works at all, why a few observables can predict and control a system. The live question is where it fails.",
+  "chain": [
+   "W4416048293",
+   "W4400490766",
+   "W4411476832",
+   "W7225771350"
+  ],
+  "foundations": [
+   "P. W. Anderson (1972). More Is Different",
+   "K. G. Wilson (1971). Renormalization Group and Critical Phenomena",
+   "Machta, Chachra, Transtrum, Sethna (2013). Parameter Space Compression Underlies Emergent Theories and Predictive Models"
+  ],
+  "question": "Can we tell in advance whether a system will compress to a few variables or stay irreducibly high-dimensional? A rare leukaemia driver or a single tipping event may be exactly where the compression breaks."
+ }
 }
