@@ -328,7 +328,7 @@ async function renderFund() {
   const chosen = fOrder.length ? fOrder.map(id => cands.find(c => c.id === id)) : [];
   if (chosen.length) {
     main.insertAdjacentHTML("beforeend", `<div class="label">Shifts in the foundations <span class="n">${chosen.length}</span></div>`);
-    chosen.forEach(it => main.append(card({ ...it, note: fnotes[it.id] }, { noteLabel: "What it shifts" })));
+    chosen.forEach(it => main.append(card({ ...it, note: fnotes[it.id], fignote: com?.figure_notes?.[it.id] }, { noteLabel: "What it shifts" })));
   }
   const rest = cands.filter(c => !fOrder.includes(c.id));
   if (rest.length) {

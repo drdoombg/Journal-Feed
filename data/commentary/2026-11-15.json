@@ -120,5 +120,11 @@
    "implication": "A reference map for basal ganglia evolution and disease, pinning psychiatric risk to specific cell types."
   }
  },
- "figure_notes": {}
+ "figure_notes": {
+  "W4286895426": "One step of the construction: a flat piece spanned by the y₁, y₂ and x₃ directions is pushed out along y₃, controlled by a function f. Deformations like this are the authors' tool for dictating where, and how intricately, the surface fails to be smooth.",
+  "W7125966085": "Rows are redshift bins. Columns are corrected brightness, light-curve shape (x₁) and colour (c). Thin blue lines are the older single-population model, thick black the new two-population model, and points are the data coloured by misfit. Where black tracks the points better, such as the faster cut-off at high x₁, the second population is real structure.",
+  "W4399758823": "A two-axis map of every way to get gradients through a differential-equation solver. Left–right: differentiate the solver's discrete steps (automatic differentiation) or solve a new continuous equation (adjoints). Up–down: push sensitivities forward from inputs or backward from outputs. Use it as a decision chart.",
+  "W7161720390": "A spacetime picture of the black-hole response to a point source (black dot). The response is built differently in different regions, and the boundary sits at the radius where the light cone scatters off the black hole's potential. The paper's job is to explain why that boundary sits exactly there: the bouncing singularity.",
+  "W4417295272": "The learning pipeline, left to right: feed one half of entangled pairs through the unknown channel, purify the resulting Choi-state copies, learn them with optimal pure-state tomography, then project the estimate onto valid quantum channels. The output is within ε of the truth in diamond distance, with optimal channel uses."
+ }
 }
