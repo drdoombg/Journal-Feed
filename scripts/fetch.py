@@ -46,7 +46,7 @@ SEEN_DAYS = 120
 SELECT = ",".join([
     "id", "doi", "title", "publication_date", "type", "cited_by_count",
     "abstract_inverted_index", "authorships", "open_access", "primary_topic",
-    "primary_location", "best_oa_location", "ids",
+    "primary_location", "best_oa_location", "ids", "locations",
 ])
 
 JUNK = re.compile(
@@ -205,8 +205,18 @@ def to_item(w, j):
         "oa_url": best.get("pdf_url") or best.get("landing_page_url") or oa.get("oa_url") or "",
         "license": (best.get("license") or "").lower(),
         "pmcid": short_id((w.get("ids") or {}).get("pmcid") or ""),
+        "arxiv": arxiv_id(w),
         "topic": topic or "",
     }
+
+
+def arxiv_id(w):
+    for loc in (w.get("locations") or []):
+        for u in (loc.get("landing_page_url") or "", loc.get("pdf_url") or ""):
+            m = re.search(r"arxiv\.org/(?:abs|pdf)/([0-9]{4}\.[0-9]{4,5})", u or "")
+            if m:
+                return m.group(1)
+    return ""
 
 
 def is_research(it):
@@ -353,6 +363,12 @@ def daily(today, cfg):
     if existing and existing.get("picks") and not FORCE["on"]:
         # same-day rerun: keep the picks (commentary refers to them), refresh the extras
         existing["fundamentals"] = fundamentals
+        for lst in ("picks", "more", "shortlist"):
+            for it in existing.get(lst, []):
+                fresh = everything.get(it["id"])
+                if fresh:
+                    for k in ("license", "pmcid", "arxiv", "oa", "oa_url"):
+                        it[k] = fresh.get(k, it.get(k))
         attach_figures(existing["picks"] + existing.get("more", []) + existing.get("shortlist", []) + fundamentals)
         existing.setdefault("stats", {})["calls_rerun"] = CALLS["n"]
         save(day_path, existing)
@@ -431,6 +447,8 @@ def daily(today, cfg):
 EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 REUSABLE = re.compile(r"^(cc[- ]?by|cc0|public[- ]domain|pd)", re.I)
 FIG_CACHE = {}
+HTTP_LAST = {"url": ""}
+FIG_STATS = {"epmc_id": 0, "epmc_fig": 0, "arxiv_try": 0, "arxiv_fig": 0}
 
 
 def http_get(url, accept=None, max_bytes=None):
@@ -439,6 +457,7 @@ def http_get(url, accept=None, max_bytes=None):
     try:
         with urllib.request.urlopen(req, timeout=30) as r:
             body = r.read(max_bytes) if max_bytes else r.read()
+            HTTP_LAST["url"] = r.geturl()
             return r.status, r.headers.get("Content-Type", ""), body
     except Exception:
         return None, "", b""
@@ -497,6 +516,36 @@ def key_figure(pmcid):
     return {"src": src, "label": pick["label"], "caption": clip(pick["caption"], 700), "ga": pick["ga"]}
 
 
+def arxiv_figure(aid):
+    """First figure from arXiv's HTML rendering of the paper (exists for most
+    papers submitted with LaTeX source since late 2023)."""
+    import html as H
+    st, _, body = http_get(f"https://arxiv.org/html/{aid}")
+    time.sleep(2.5)                                   # be polite to arXiv
+    if st != 200 or not body:
+        return None
+    base = HTTP_LAST["url"].rstrip("/") + "/"
+    page = body.decode("utf-8", "replace")
+    for m in re.finditer(r"<figure[^>]*class=\"[^\"]*ltx_figure[^\"]*\"[^>]*>(.*?)</figure>", page, re.S):
+        inner = m.group(1)
+        img = re.search(r"<img[^>]+src=\"([^\"]+)\"", inner)
+        if not img:
+            continue
+        cap = re.search(r"<figcaption[^>]*>(.*?)</figcaption>", inner, re.S)
+        caption = H.unescape(re.sub(r"<[^>]+>", " ", cap.group(1))) if cap else ""
+        caption = " ".join(caption.split())
+        label_m = re.match(r"((?:Figure|Fig\.)\s*\d+)[:.]?\s*", caption)
+        label = label_m.group(1) if label_m else "Figure 1"
+        if label_m:
+            caption = caption[label_m.end():]
+        src = urllib.parse.urljoin(base, img.group(1))
+        st2, ctype, _ = http_get(src, max_bytes=64)
+        if st2 == 200 and ctype.startswith("image"):
+            return {"src": src, "label": label, "caption": clip(caption, 700), "ga": False, "via": "arXiv"}
+        return None
+    return None
+
+
 def attach_figures(items):
     n_try = n_ok = 0
     for it in items:
@@ -508,18 +557,30 @@ def attach_figures(items):
             fig = FIG_CACHE[it["id"]]
         else:
             n_try += 1
-            pmcid = find_pmcid(it)
-            fig = key_figure(pmcid) if pmcid else None
+            fig = None
+            pmcid = find_pmcid(it) if it.get("d") not in ("Mathematics", "Physics", "Earth and space", "Computer science",
+                                                       "Economics", "Business", "Humanities and arts", "Society and law") else ""
+            if pmcid:
+                FIG_STATS["epmc_id"] += 1
+                fig = key_figure(pmcid)
+                if fig:
+                    FIG_STATS["epmc_fig"] += 1
+                    fig["via"] = "Europe PMC"
+                    fig["pmcid"] = pmcid
+            if not fig and it.get("arxiv"):
+                FIG_STATS["arxiv_try"] += 1
+                fig = arxiv_figure(it["arxiv"])
+                if fig:
+                    FIG_STATS["arxiv_fig"] += 1
             if fig:
                 lic = it["license"].upper().replace("CC-", "CC ").replace("-", " ")
                 first = (it.get("authors") or ["Authors"])[0]
                 fig["credit"] = f"{first}{' et al.' if it.get('n_auth', 1) > 1 else ''}, {it['journal']} ({lic})"
-                fig["pmcid"] = pmcid
             FIG_CACHE[it["id"]] = fig
         if fig:
             it["fig"] = fig
             n_ok += 1
-    print(f"  figures: {n_ok} attached ({n_try} open-licence papers checked)")
+    print(f"  figures: {n_ok} attached from {n_try} open-licence papers checked {FIG_STATS}")
 
 
 FORCE = {"on": False}

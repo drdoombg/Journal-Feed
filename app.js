@@ -77,7 +77,7 @@ function card(it, opt = {}) {
     <h2><a href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.title)}</a></h2>
     ${authors ? `<div class="authors">${authors}</div>` : ""}
     ${fig ? `<figure><div class="img"><img loading="lazy" src="${esc(fig.src)}" alt="${esc(fig.label)} from the paper"></div>
-      <figcaption><b>${esc(fig.label)}</b>${fig.caption ? " | " + esc(fig.caption) : ""}<span class="credit">${esc(fig.credit || "")} · via Europe PMC</span></figcaption></figure>
+      <figcaption><b>${esc(fig.label)}</b>${fig.caption ? " | " + esc(fig.caption) : ""}<span class="credit">${esc(fig.credit || "")} · via ${esc(fig.via || "Europe PMC")}</span></figcaption></figure>
       ${it.fignote ? `<div class="block"><div class="h">Reading the figure</div><div class="fignote">${esc(it.fignote)}</div></div>` : ""}` : ""}
     ${it.note ? `<div class="block"><div class="h">${opt.noteLabel || "Why it matters"}</div><div class="note">${esc(it.note)}</div></div>` : ""}
     ${c ? `<dl class="cons"><dt>Question</dt><dd>${esc(c.question)}</dd><dt>Approach</dt><dd>${esc(c.approach)}</dd>
