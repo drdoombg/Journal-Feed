@@ -145,6 +145,66 @@ def jitter(key):
     return int(hashlib.md5(key.encode()).hexdigest()[:6], 16) / 0xFFFFFF
 
 
+
+# --------------------------------------------------------------- latex ------
+GREEK = {"alpha":"α","beta":"β","gamma":"γ","delta":"δ","epsilon":"ε","varepsilon":"ε","zeta":"ζ","eta":"η",
+  "theta":"θ","vartheta":"ϑ","iota":"ι","kappa":"κ","lambda":"λ","mu":"μ","nu":"ν","xi":"ξ","pi":"π","rho":"ρ",
+  "sigma":"σ","tau":"τ","upsilon":"υ","phi":"φ","varphi":"φ","chi":"χ","psi":"ψ","omega":"ω","Gamma":"Γ",
+  "Delta":"Δ","Theta":"Θ","Lambda":"Λ","Xi":"Ξ","Pi":"Π","Sigma":"Σ","Phi":"Φ","Psi":"Ψ","Omega":"Ω"}
+SYM = {"leq":"≤","le":"≤","geq":"≥","ge":"≥","neq":"≠","ne":"≠","simeq":"≃","approx":"≈","sim":"~","equiv":"≡",
+  "times":"×","cdot":"·","pm":"±","mp":"∓","to":"→","rightarrow":"→","leftarrow":"←","Rightarrow":"⇒",
+  "infty":"∞","sum":"Σ","prod":"Π","int":"∫","partial":"∂","nabla":"∇","in":"∈","notin":"∉","subset":"⊂",
+  "subseteq":"⊆","cup":"∪","cap":"∩","diamond":"◇","propto":"∝","odot":"⊙","oplus":"⊕","otimes":"⊗",
+  "langle":"⟨","rangle":"⟩","llbracket":"⟦","rrbracket":"⟧","ell":"ℓ","hbar":"ℏ","circ":"°","prime":"′",
+  "dots":"…","ldots":"…","cdots":"⋯","sqrt":"√","forall":"∀","exists":"∃","emptyset":"∅","mid":"|",
+  "|":"‖","star":"⋆",**{f: f for f in ("min","max","log","ln","exp","sin","cos","tan","det","lim","sup","inf","arg","Tr","tr","dim","ker","deg","mod")},"ast":"∗","perp":"⊥","parallel":"∥","dagger":"†","angle":"∠","degree":"°","AA":"Å"}
+SUB = dict(zip("0123456789+-=()aehijklmnoprstuvx", "₀₁₂₃₄₅₆₇₈₉₊₋₌₍₎ₐₑₕᵢⱼₖₗₘₙₒₚᵣₛₜᵤᵥₓ"))
+SUP = dict(zip("0123456789+-=()inT*", "⁰¹²³⁴⁵⁶⁷⁸⁹⁺⁻⁼⁽⁾ⁱⁿᵀ*"))
+
+
+def _script(txt, table, mark):
+    txt = re.sub(r"\s+", "", txt)
+    if txt and all(c in table for c in txt):
+        return "".join(table[c] for c in txt)
+    return mark + (txt if len(txt) == 1 else f"({txt})")
+
+
+def latex_to_text(t):
+    """Readable plain text from LaTeX fragments in captions, titles, abstracts."""
+    if not t or ("\\" not in t and "_" not in t and "^" not in t and "{" not in t):
+        return t
+    t = re.sub(r"\\(?:rm|bf|it|sf|cal)\b\s*", " ", t)             # old-style font switches
+    t = re.sub(r"\\(left|right|big|Big|bigg|Bigg)\b\s*", "", t)
+    for _ in range(3):   # innermost-first for nested groups
+        t = re.sub(r"\\(?:mathrm|text|textrm|mathit|mathbf|mathsf|mathcal|mathbb|operatorname|boldsymbol|textit|textbf|emph)\s*\{([^{}]*)\}", r"\1", t)
+        t = re.sub(r"\\(?:hat|widehat)\s*\{([^{}]*)\}", lambda m: m.group(1) + "\u0302", t)
+        t = re.sub(r"\\(?:tilde|widetilde)\s*\{([^{}]*)\}", lambda m: m.group(1) + "\u0303", t)
+        t = re.sub(r"\\(?:bar|overline)\s*\{([^{}]*)\}", lambda m: m.group(1) + "\u0304", t)
+        t = re.sub(r"\\vec\s*\{([^{}]*)\}", lambda m: m.group(1) + "\u20d7", t)
+        t = re.sub(r"\\d?frac\s*\{([^{}]*)\}\s*\{([^{}]*)\}", r"\1/\2", t)
+        t = re.sub(r"\\sqrt\s*\{([^{}]*)\}", r"√(\1)", t)
+        t = re.sub(r"\\ket\s*\{([^{}]*)\}", r"|\1⟩", t)
+        t = re.sub(r"\\bra\s*\{([^{}]*)\}", r"⟨\1|", t)
+    t = re.sub(r"\\([A-Za-z]+|\|)", lambda m: GREEK.get(m.group(1)) or SYM.get(m.group(1)) or "", t)
+    for _ in range(2):
+        t = re.sub(r"_\{([^{}]*)\}", lambda m: _script(m.group(1), SUB, "_"), t)
+        t = re.sub(r"\^\{([^{}]*)\}", lambda m: _script(m.group(1), SUP, "^"), t)
+    t = re.sub(r"_([A-Za-z0-9])", lambda m: _script(m.group(1), SUB, "_"), t)
+    t = re.sub(r"\^([A-Za-z0-9*])", lambda m: _script(m.group(1), SUP, "^"), t)
+    t = re.sub(r"\\[,;:! ]", " ", t).replace("~", " ")
+    t = t.replace("{", "").replace("}", "").replace("$", "")
+    return re.sub(r"\s+", " ", t).strip()
+
+
+def clean_math(text):
+    """Convert $...$ / \\(...\\) segments; leave ordinary text alone."""
+    if not text or ("$" not in text and "\\(" not in text):
+        return latex_to_text(text) if text and "\\" in text else text
+    text = re.sub(r"\$\$?(.+?)\$\$?", lambda m: latex_to_text(m.group(1)), text)
+    text = re.sub(r"\\\((.+?)\\\)", lambda m: latex_to_text(m.group(1)), text)
+    return text
+
+
 # ------------------------------------------------------------- sources ------
 
 def resolve_sources(journals):
@@ -188,7 +248,7 @@ def to_item(w, j):
         "id": short_id(w.get("id")),
         "doi": doi.replace("https://doi.org/", "") if doi else "",
         "url": url,
-        "title": re.sub(r"<[^>]+>", "", w.get("title") or "").strip(),
+        "title": clean_math(re.sub(r"<[^>]+>", "", w.get("title") or "").strip()),
         "journal": j["n"],
         "issn": j["issn"],
         "d": j["d"],
@@ -200,10 +260,10 @@ def to_item(w, j):
         "cited": w.get("cited_by_count") or 0,
         "authors": auths[:4],
         "n_auth": len(auths),
-        "abstract": clip(abstract_from_index(w.get("abstract_inverted_index")), 1800),
+        "abstract": clip(clean_math(abstract_from_index(w.get("abstract_inverted_index"))), 1800),
         "oa": bool(oa.get("is_oa")),
         "oa_url": best.get("pdf_url") or best.get("landing_page_url") or oa.get("oa_url") or "",
-        "license": (best.get("license") or "").lower(),
+        "license": (best.get("license") or next((l.get("license") for l in (w.get("locations") or []) if l.get("license")), "") or "").lower(),
         "pmcid": short_id((w.get("ids") or {}).get("pmcid") or ""),
         "arxiv": arxiv_id(w),
         "topic": topic or "",
@@ -368,7 +428,7 @@ def daily(today, cfg):
                 it.pop("fig", None)                  # refetch with current parser
                 fresh = everything.get(it["id"])
                 if fresh:
-                    for k in ("license", "pmcid", "arxiv", "oa", "oa_url"):
+                    for k in ("license", "pmcid", "arxiv", "oa", "oa_url", "title", "abstract"):
                         it[k] = fresh.get(k, it.get(k))
         attach_figures(existing["picks"] + existing.get("more", []) + existing.get("shortlist", []) + fundamentals)
         existing.setdefault("stats", {})["calls_rerun"] = CALLS["n"]
@@ -450,7 +510,7 @@ REUSABLE = re.compile(r"^(cc[- ]?by|cc0|public[- ]domain|pd)", re.I)
 FIG_CACHE = {}
 HTTP_LAST = {"url": ""}
 DEBUG = {"n": 0}
-FIG_STATS = {"epmc_id": 0, "epmc_fig": 0, "arxiv_try": 0, "arxiv_fig": 0}
+FIG_STATS = {"epmc_id": 0, "epmc_fig": 0, "arxiv_try": 0, "arxiv_fig": 0, "pub_try": 0, "pub_fig": 0, "arxs_try": 0, "arxs_fig": 0}
 
 
 def http_get(url, accept=None, max_bytes=None):
@@ -541,10 +601,11 @@ def arxiv_figure(aid):
         cap_html = cap.group(1) if cap else ""
         # MathML carries the formula twice (rendered + LaTeX); keep one readable copy
         cap_html = re.sub(r'<math[^>]*alttext="([^"]*)"[^>]*>.*?</math>',
-                          lambda mm: " " + H.unescape(mm.group(1)) + " ", cap_html, flags=re.S)
+                          lambda mm: " " + latex_to_text(H.unescape(mm.group(1))) + " ", cap_html, flags=re.S)
         cap_html = re.sub(r"<annotation(?:-xml)?\b[^>]*>.*?</annotation(?:-xml)?>", " ", cap_html, flags=re.S)
         caption = H.unescape(re.sub(r"<[^>]+>", " ", cap_html))
         caption = re.sub(r"[\u200b\u2061\u2062\u2063]", "", caption)          # invisible MathML operators
+        caption = latex_to_text(caption)
         caption = " ".join(caption.split())
         label_m = re.match(r"((?:Figure|Fig\.)\s*\d+)[:.]?\s*", caption)
         label = label_m.group(1) if label_m else "Figure 1"
@@ -556,6 +617,77 @@ def arxiv_figure(aid):
             return {"src": src, "label": label, "caption": clip(caption, 700), "ga": False, "via": "arXiv"}
         return None
     return None
+
+
+def _html_text(fragment):
+    import html as H
+    fragment = re.sub(r"<math[^>]*alttext=\"([^\"]*)\"[^>]*>.*?</math>", lambda m: " " + H.unescape(m.group(1)) + " ", fragment, flags=re.S)
+    fragment = re.sub(r"<(script|style)[^>]*>.*?</\1>", " ", fragment, flags=re.S)
+    txt = H.unescape(re.sub(r"<[^>]+>", " ", fragment))
+    return latex_to_text(" ".join(txt.split()))
+
+
+FIGLIKE = re.compile(r"(fig(ure)?[-_ ]?0*1\b|fig0*1|_fig1|f0*1\.|gr1\.|g001|ga1|graphical|mediaobjects)", re.I)
+
+
+def publisher_figure(it):
+    """First figure from the publisher's article page. Only called for papers
+    under a Creative Commons licence, where reuse with credit is permitted."""
+    if not it.get("doi"):
+        return None
+    st, ctype, body = http_get(f"https://doi.org/{it['doi']}", accept="text/html")
+    time.sleep(1.0)
+    if st != 200 or "html" not in ctype or not body:
+        return None
+    page = body.decode("utf-8", "replace")
+    base = HTTP_LAST["url"]
+    src, caption, label = None, "", "Figure 1"
+    for m in re.finditer(r"<figure\b[^>]*>(.*?)</figure>", page, re.S):
+        inner = m.group(1)
+        img = re.search(r"<img[^>]+?(?:data-src|src)=\"([^\"]+)\"", inner)
+        if not img or re.search(r"logo|icon|cover|placeholder|spinner|\.svg$", img.group(1), re.I):
+            continue
+        src = img.group(1)
+        fc = re.search(r"<figcaption[^>]*>(.*?)</figcaption>", inner, re.S)
+        caption = _html_text(fc.group(1)) if fc else ""
+        desc = re.search(r"<div[^>]+(?:figure-description|bottom-caption|caption)[^>]*>(.*?)</div>", inner, re.S)
+        if desc:
+            caption = (caption + " " + _html_text(desc.group(1))).strip()
+        break
+    if not src:
+        og = re.search(r"<meta[^>]+property=\"og:image\"[^>]+content=\"([^\"]+)\"", page) or \
+             re.search(r"<meta[^>]+content=\"([^\"]+)\"[^>]+property=\"og:image\"", page)
+        if og and FIGLIKE.search(og.group(1)):
+            src = og.group(1)
+    if not src:
+        return None
+    src = urllib.parse.urljoin(base, src.replace("&amp;", "&"))
+    lm = re.match(r"((?:Fig\.?|Figure)\s*\d+)[:.|]?\s*", caption)
+    if lm:
+        label, caption = lm.group(1).replace("Fig ", "Fig. "), caption[lm.end():]
+    st2, ctype2, _ = http_get(src, max_bytes=64)
+    if st2 != 200 or not ctype2.startswith("image"):
+        return None
+    return {"src": src, "label": label, "caption": clip(caption, 700), "ga": False,
+            "via": urllib.parse.urlparse(base).netloc.replace("www.", "")}
+
+
+def arxiv_search(title):
+    """Find a paper's arXiv id by exact-ish title match."""
+    import difflib
+    norm = lambda x: re.sub(r"[^a-z0-9 ]", "", (x or "").lower())
+    q = urllib.parse.quote(f'ti:"{re.sub(r"[^A-Za-z0-9 ]", " ", title)[:200]}"')
+    st, _, body = http_get(f"http://export.arxiv.org/api/query?search_query={q}&max_results=3")
+    time.sleep(3.0)
+    if st != 200 or not body:
+        return ""
+    feed = body.decode("utf-8", "replace")
+    for e in re.finditer(r"<entry>(.*?)</entry>", feed, re.S):
+        t = re.search(r"<title>(.*?)</title>", e.group(1), re.S)
+        i = re.search(r"<id>https?://arxiv\.org/abs/([0-9]{4}\.[0-9]{4,5})", e.group(1))
+        if t and i and difflib.SequenceMatcher(None, norm(" ".join(t.group(1).split())), norm(title)).ratio() > 0.92:
+            return i.group(1)
+    return ""
 
 
 def attach_figures(items):
@@ -584,6 +716,21 @@ def attach_figures(items):
                 fig = arxiv_figure(it["arxiv"])
                 if fig:
                     FIG_STATS["arxiv_fig"] += 1
+            if not fig:
+                FIG_STATS["pub_try"] += 1
+                fig = publisher_figure(it)
+                if fig:
+                    FIG_STATS["pub_fig"] += 1
+            if not fig and not it.get("arxiv") and it.get("d") in ("Mathematics", "Physics", "Earth and space",
+                                                                  "Computer science", "Engineering and technology",
+                                                                  "Economics", "Cross-domain", "Chemistry"):
+                FIG_STATS["arxs_try"] += 1
+                aid = arxiv_search(it["title"])
+                if aid:
+                    it["arxiv"] = aid
+                    fig = arxiv_figure(aid)
+                    if fig:
+                        FIG_STATS["arxs_fig"] += 1
             if fig:
                 lic = it["license"].upper().replace("CC-", "CC ").replace("-", " ")
                 first = (it.get("authors") or ["Authors"])[0]

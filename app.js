@@ -57,7 +57,9 @@ function card(it, opt = {}) {
   const tags = [
     it.wildcard ? `<span class="tag wild">Wildcard</span>` : "",
     it.classic ? `<span class="tag">Classic</span>` : "",
-    it.oa ? `<span class="tag oa">Open access</span>` : "",
+    it.oa ? (/^(cc|public|pd)/i.test(it.license || "")
+      ? `<span class="tag oa" title="Openly licensed: figures can be shown">Open access · ${esc((it.license || "").toUpperCase().replace(/^CC-/, "CC ").replace(/-/g, "‑"))}</span>`
+      : `<span class="tag" title="Free to read, but not openly licensed, so figures can't be republished here">Free to read</span>`) : "",
     it.was_picked ? `<span class="tag oa">In your feed</span>` : "",
   ].join("");
   const c = it.cons;
