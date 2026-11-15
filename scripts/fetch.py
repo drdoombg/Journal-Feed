@@ -542,7 +542,9 @@ def arxiv_figure(aid):
         # MathML carries the formula twice (rendered + LaTeX); keep one readable copy
         cap_html = re.sub(r'<math[^>]*alttext="([^"]*)"[^>]*>.*?</math>',
                           lambda mm: " " + H.unescape(mm.group(1)) + " ", cap_html, flags=re.S)
+        cap_html = re.sub(r"<annotation(?:-xml)?\b[^>]*>.*?</annotation(?:-xml)?>", " ", cap_html, flags=re.S)
         caption = H.unescape(re.sub(r"<[^>]+>", " ", cap_html))
+        caption = re.sub(r"[\u200b\u2061\u2062\u2063]", "", caption)          # invisible MathML operators
         caption = " ".join(caption.split())
         label_m = re.match(r"((?:Figure|Fig\.)\s*\d+)[:.]?\s*", caption)
         label = label_m.group(1) if label_m else "Figure 1"
