@@ -1,6 +1,6 @@
 // Shell cached for instant open; data is network-first so the feed is always fresh.
-const CACHE = "jf-shell-v9";
-const SHELL = ["./", "index.html", "style.css?v=9", "app.js?v=9", "journals.json", "manifest.json", "icon.svg", "icon-192.png", "icon-512.png"];
+const CACHE = "jf-shell-v10";
+const SHELL = ["./", "index.html", "style.css?v=9", "app.js?v=10", "journals.json", "manifest.json", "icon.svg", "icon-192.png", "icon-512.png"];
 
 self.addEventListener("install", e => {
   e.waitUntil(caches.open(CACHE).then(c => c.addAll(SHELL)).then(() => self.skipWaiting()));

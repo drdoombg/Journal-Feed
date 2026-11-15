@@ -88,6 +88,7 @@ function card(it, opt = {}) {
     <div class="actions">
       ${it.abstract ? `<button data-a="abs">Abstract</button>` : `<span class="na">No abstract</span>`}
       ${it.oa_url ? `<a href="${esc(it.oa_url)}" target="_blank" rel="noopener">Full text</a>` : ""}
+      <button data-a="share" title="Share the paper's link">Share</button>
       <button data-a="log" title="Copy for the knowledge map">Log</button>
       <span class="sp"></span>
       <button data-a="up" class="${v > 0 ? "on-up" : ""}" title="More like this">▲</button>
@@ -106,6 +107,7 @@ function card(it, opt = {}) {
     if (a === "up" || a === "down") vote(it, a === "up" ? 1 : -1, el);
     if (a === "save") toggleSave(it, b);
     if (a === "log") logToMap(it);
+    if (a === "share") sharePaper(it);
   });
   views[it.d] = (views[it.d] || 0) + 1;
   shownIds.add(it.id);
@@ -197,6 +199,17 @@ function toggleSave(it, b) {
   else { saved[it.id] = { ...it, savedAt: today() }; b.textContent = "Saved"; b.className = "on-save"; toast("Saved"); }
   store.set("saved", saved);
 }
+/* Share = the paper's link only. On a phone this opens the system share
+   sheet (pick Claude, ChatGPT, any app); on desktop it copies the link. */
+async function sharePaper(it) {
+  const link = it.doi ? `https://doi.org/${it.doi}` : it.url;
+  if (navigator.share && matchMedia("(pointer: coarse)").matches) {
+    try { await navigator.share({ url: link }); return; } catch (e) { if (e.name === "AbortError") return; }
+  }
+  try { await navigator.clipboard.writeText(link); toast("Link copied — paste it into Claude"); }
+  catch { prompt("Copy this link:", link); }
+}
+
 async function logToMap(it) {
   const yr = (it.date || "").slice(0, 4);
   const link = it.doi ? `https://doi.org/${it.doi}` : it.url;
