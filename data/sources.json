@@ -458,5 +458,60 @@
   "id": "S125754415",
   "name": "Proceedings of the National Academy of Sciences",
   "how": "issn"
+ },
+ "0032-5791": {
+  "id": "S133896805",
+  "name": "Poultry Science",
+  "how": "issn"
+ },
+ "0007-1668": {
+  "id": "S111213849",
+  "name": "British Poultry Science",
+  "how": "issn"
+ },
+ "0168-1605": {
+  "id": "S132626406",
+  "name": "International Journal of Food Microbiology",
+  "how": "issn"
+ },
+ "0740-0020": {
+  "id": "S50630504",
+  "name": "Food Microbiology",
+  "how": "issn"
+ },
+ "0956-7135": {
+  "id": "S119525064",
+  "name": "Food Control",
+  "how": "issn"
+ },
+ "0362-028X": {
+  "id": "S66401815",
+  "name": "Journal of Food Protection",
+  "how": "issn"
+ },
+ "1831-4732": {
+  "id": "S2738498342",
+  "name": "EFSA Journal",
+  "how": "issn"
+ },
+ "0309-1740": {
+  "id": "S9483105",
+  "name": "Meat Science",
+  "how": "issn"
+ },
+ "1541-4337": {
+  "id": "S336866",
+  "name": "Comprehensive Reviews in Food Science and Food Safety",
+  "how": "issn"
+ },
+ "0924-2244": {
+  "id": "S89023782",
+  "name": "Trends in Food Science & Technology",
+  "how": "issn"
+ },
+ "0099-2240": {
+  "id": "S158228368",
+  "name": "Applied and Environmental Microbiology",
+  "how": "issn"
  }
 }
