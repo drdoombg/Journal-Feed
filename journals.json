@@ -15,7 +15,8 @@
     "Humanities and arts": "#d6a77f",
     "Society and law": "#b3c77f",
     "Life and practice": "#9fd6c9",
-    "Cross-domain": "#dddddd"
+    "Cross-domain": "#dddddd",
+    "Food industry": "#e8b04a"
   },
   "journals": [
     {"d":"Mathematics","n":"Annals of Mathematics","issn":"0003-486X","t":3,"f":1},
@@ -123,6 +124,18 @@
 
     {"d":"Cross-domain","n":"Nature","issn":"0028-0836","t":3},
     {"d":"Cross-domain","n":"Science","issn":"0036-8075","t":3},
-    {"d":"Cross-domain","n":"Proceedings of the National Academy of Sciences","issn":"0027-8424","t":2}
+    {"d":"Cross-domain","n":"Proceedings of the National Academy of Sciences","issn":"0027-8424","t":2},
+
+    {"d":"Food industry","n":"Poultry Science","issn":"0032-5791","t":3,"work":1},
+    {"d":"Food industry","n":"British Poultry Science","issn":"0007-1668","t":2,"work":1},
+    {"d":"Food industry","n":"International Journal of Food Microbiology","issn":"0168-1605","t":2,"work":1},
+    {"d":"Food industry","n":"Food Microbiology","issn":"0740-0020","t":2,"work":1},
+    {"d":"Food industry","n":"Food Control","issn":"0956-7135","t":2,"work":1},
+    {"d":"Food industry","n":"Journal of Food Protection","issn":"0362-028X","t":2,"work":1},
+    {"d":"Food industry","n":"EFSA Journal","issn":"1831-4732","t":2,"work":1},
+    {"d":"Food industry","n":"Meat Science","issn":"0309-1740","t":2,"work":1},
+    {"d":"Food industry","n":"Comprehensive Reviews in Food Science and Food Safety","issn":"1541-4337","t":2,"work":1,"review":true},
+    {"d":"Food industry","n":"Trends in Food Science & Technology","issn":"0924-2244","t":2,"work":1,"review":true},
+    {"d":"Food industry","n":"Applied and Environmental Microbiology","issn":"0099-2240","t":2,"work":1}
   ]
 }

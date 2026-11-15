@@ -136,7 +136,8 @@ figure img{cursor:zoom-in}
 .list a.row{display:flex;justify-content:space-between;gap:10px;padding:12px 2px;border-bottom:1px solid var(--rule);text-decoration:none}
 .list a.row span:first-child{font-family:var(--serif);font-size:16px}
 .list a.row:hover span:first-child{color:var(--link)}
-.list .row span:last-child{color:var(--dimmer);font-size:12.5px}
+.list .row span:last-child{color:var(--dimmer);font-size:12.5px;white-space:nowrap;flex-shrink:0}
+.list .row small.kind{display:block;font:600 10.5px var(--sans);letter-spacing:1px;text-transform:uppercase;color:var(--dim);margin-bottom:2px}
 .empty{color:var(--dim);text-align:center;padding:44px 10px;font-size:14px}
 
 /* settings */

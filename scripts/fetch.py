@@ -411,18 +411,23 @@ def daily(today, cfg):
             if it["id"] not in everything or everything[it["id"]]["score"] < it["score"]:
                 everything[it["id"]] = it
 
-    pool = sorted((it for it in everything.values() if it["id"] not in seen), key=lambda x: -x["score"])
+    work = sorted((it for it in everything.values() if it["d"] in WORK_DOMAINS), key=lambda x: -x["score"])
+    food = pick_diverse(work, 25, per_journal=4, per_domain=25)
+    general = {k: v for k, v in everything.items() if v["d"] not in WORK_DOMAINS}
+    pool = sorted((it for it in general.values() if it["id"] not in seen), key=lambda x: -x["score"])
     print(f"  {n_raw} raw works, {len(everything)} research items, {len(pool)} not yet shown")
 
-    fundamentals = pick_diverse(sorted((it for it in everything.values() if it["fs"] >= 8),
+    fundamentals = pick_diverse(sorted((it for it in general.values() if it["fs"] >= 8),
                                        key=lambda x: -x["fs"]), 25, per_journal=4, per_domain=5)
     update_domain_index(today, everything)
+    fetch_work_sources(today)
 
     day_path = os.path.join(DATA, "days", f"{today.isoformat()}.json")
     existing = load(day_path, None)
     if existing and existing.get("picks") and not FORCE["on"]:
         # same-day rerun: keep the picks (commentary refers to them), refresh the extras
         existing["fundamentals"] = fundamentals
+        existing["food"] = food
         for lst in ("picks", "more", "shortlist"):
             for it in existing.get(lst, []):
                 it.pop("fig", None)                  # refetch with current parser
@@ -430,7 +435,7 @@ def daily(today, cfg):
                 if fresh:
                     for k in ("license", "pmcid", "arxiv", "oa", "oa_url", "title", "abstract"):
                         it[k] = fresh.get(k, it.get(k))
-        attach_figures(existing["picks"] + existing.get("more", []) + existing.get("shortlist", []) + fundamentals)
+        attach_figures(existing["picks"] + existing.get("more", []) + existing.get("shortlist", []) + fundamentals + food)
         existing.setdefault("stats", {})["calls_rerun"] = CALLS["n"]
         save(day_path, existing)
         save(os.path.join(DATA, "latest.json"), existing)
@@ -471,7 +476,7 @@ def daily(today, cfg):
             shortlist_ids.append(it["id"])
 
     by_id = {it["id"]: it for it in pool}
-    attach_figures(picks + more + [by_id[i] for i in shortlist_ids if i in by_id] + fundamentals)
+    attach_figures(picks + more + [by_id[i] for i in shortlist_ids if i in by_id] + fundamentals + food)
     out = {
         "date": today.isoformat(),
         "generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -480,6 +485,7 @@ def daily(today, cfg):
         "more": more,
         "shortlist": [by_id[i] for i in shortlist_ids if i in by_id],
         "fundamentals": fundamentals,
+        "food": food,
     }
 
     save(day_path, out)
@@ -740,6 +746,74 @@ def attach_figures(items):
             it["fig"] = fig
             n_ok += 1
     print(f"  figures: {n_ok} attached from {n_try} open-licence papers checked {FIG_STATS}")
+
+
+# ---------------------------------------------------------- work sources ---
+WORK_DOMAINS = {"Food industry"}
+
+GOVUK_QUERIES = [
+    ("poultry", ["animal-and-plant-health-agency", "department-for-environment-food-rural-affairs", "food-standards-agency"]),
+    ("avian influenza", ["animal-and-plant-health-agency", "department-for-environment-food-rural-affairs"]),
+    ("food safety", ["food-standards-agency", "uk-health-security-agency"]),
+    ("food hygiene", ["food-standards-agency", "uk-health-security-agency"]),
+    ("Salmonella", ["uk-health-security-agency", "animal-and-plant-health-agency", "food-standards-agency"]),
+    ("Campylobacter", ["uk-health-security-agency", "food-standards-agency"]),
+    ("Listeria", ["uk-health-security-agency", "food-standards-agency"]),
+]
+
+
+def fetch_work_sources(today):
+    """data/work.json: new UK guidance (GOV.UK search API) and FSA food alerts.
+    Both are official, keyless, Open Government Licence sources."""
+    out = {"updated": today.isoformat(), "govuk": [], "alerts": []}
+    since = (today - dt.timedelta(days=120)).isoformat()
+    seen = {}
+    for q, orgs in GOVUK_QUERIES:
+        params = [("q", q), ("order", "-public_timestamp"), ("count", "10"),
+                  ("filter_public_timestamp", f"from:{since}"),
+                  ("fields", "title"), ("fields", "description"), ("fields", "link"),
+                  ("fields", "public_timestamp"), ("fields", "organisations"), ("fields", "format")]
+        params += [("filter_organisations", o) for o in orgs]
+        st, _, body = http_get("https://www.gov.uk/api/search.json?" + urllib.parse.urlencode(params, safe=":"))
+        if st != 200:
+            print(f"  ! GOV.UK search {q!r}: {st}", file=sys.stderr)
+            continue
+        try:
+            res = json.loads(body.decode("utf-8")).get("results", [])
+        except Exception:
+            res = []
+        for r in res:
+            link = r.get("link") or ""
+            if not link or link in seen:
+                continue
+            orgs_out = [o.get("acronym") or o.get("title") for o in (r.get("organisations") or []) if isinstance(o, dict)]
+            seen[link] = {"title": r.get("title", ""), "desc": clip(r.get("description") or "", 300),
+                          "url": "https://www.gov.uk" + link if link.startswith("/") else link,
+                          "date": (r.get("public_timestamp") or "")[:10], "orgs": [o for o in orgs_out if o],
+                          "format": (r.get("format") or "").replace("_", " "), "topic": q}
+    out["govuk"] = sorted(seen.values(), key=lambda x: x["date"], reverse=True)[:30]
+
+    st, _, body = http_get("https://data.food.gov.uk/food-alerts/id?" + urllib.parse.urlencode(
+        {"_limit": 50, "since": (today - dt.timedelta(days=60)).isoformat()}), accept="application/json")
+    if st == 200:
+        try:
+            items = json.loads(body.decode("utf-8")).get("items", [])
+        except Exception:
+            items = []
+        alerts = []
+        for a in items:
+            notation = a.get("notation") or (a.get("@id") or "").rsplit("/", 1)[-1]
+            types = a.get("type") or []
+            types = types if isinstance(types, list) else [types]
+            kind = "Allergy alert" if any("AA" in str(t) or "Allergy" in str(t) for t in types) or "-AA-" in notation else \
+                   "Food alert for action" if "FAFA" in notation else "Product recall"
+            alerts.append({"title": a.get("title", ""), "date": (a.get("created") or "")[:10], "id": notation, "kind": kind,
+                           "url": a.get("alertURL") or f"https://www.food.gov.uk/news-alerts/alert/{notation.lower()}"})
+        out["alerts"] = sorted(alerts, key=lambda x: x["date"], reverse=True)[:25]
+    else:
+        print(f"  ! FSA alerts: {st}", file=sys.stderr)
+    save(os.path.join(DATA, "work.json"), out)
+    print(f"  work sources: {len(out['govuk'])} GOV.UK items, {len(out['alerts'])} FSA alerts")
 
 
 FORCE = {"on": False}

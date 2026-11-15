@@ -449,6 +449,65 @@ async function renderDomains(dom) {
   });
 }
 
+/* ------------------------------------------------------ food industry --- */
+const FOOD_REFS = [
+  ["Regulation (EC) No 2073/2005: microbiological criteria for foodstuffs (UK version, Annex I)", "https://www.legislation.gov.uk/eur/2005/2073/annexes", "legislation.gov.uk"],
+  ["UKHSA guidelines for assessing the microbiological safety of ready-to-eat foods (2024)", "https://assets.publishing.service.gov.uk/media/66debd72e87ad2f1218265e1/UKHSA-ready-to-eat-guidelines-2024.pdf", "UKHSA · PDF"],
+  ["Campden BRI guidelines: sampling, HACCP, shelf life, cleaning and disinfection", "https://www.campdenbri.co.uk/publications/pubs.php", "Campden BRI · paid"],
+  ["BRCGS Global Standard Food Safety (Issue 9)", "https://www.brcgs.com/", "BRCGS"],
+  ["FSA food and allergy alerts (official data feed)", "https://data.food.gov.uk/food-alerts/ui/reference", "Food Standards Agency"],
+  ["EFSA Journal: scientific opinions on Salmonella, Campylobacter, Listeria", "https://efsa.onlinelibrary.wiley.com/journal/18314732", "EFSA"],
+];
+
+async function renderFood() {
+  stopPool();
+  main.innerHTML = `<div class="loader">Loading…</div>`;
+  let day = null, work = null;
+  try { day = await getJSON("data/latest.json", { cache: "no-store" }); } catch {}
+  try { work = await getJSON("data/work.json", { cache: "no-store" }); } catch {}
+  if (!DOMIDX) { try { DOMIDX = await getJSON("data/domains.json", { cache: "no-store" }); } catch { DOMIDX = { domains: {} }; } }
+  main.innerHTML = `<section class="foundation" style="border-top-color:${CFG.domains["Food industry"] || "var(--ink)"}">
+      <div class="kicker">Food industry</div>
+      <h2>Poultry, food safety and microbiology</h2>
+      <p>New research from the poultry and food-safety journals, the latest UK guidance and FSA alerts, and the standards you work to.</p></section>`;
+
+  const alerts = work?.alerts || [];
+  if (alerts.length) {
+    main.insertAdjacentHTML("beforeend", `<div class="label">FSA alerts <span class="n">last 60 days</span></div><div class="list">` +
+      alerts.slice(0, 10).map(a => `<a class="row" href="${esc(a.url)}" target="_blank" rel="noopener">
+        <span><small class="kind">${esc(a.kind)}</small>${esc(a.title)}</span><span>${fmtDate(a.date)}</span></a>`).join("") + `</div>`);
+  }
+  const gov = work?.govuk || [];
+  if (gov.length) {
+    main.insertAdjacentHTML("beforeend", `<div class="label">New UK guidance <span class="n">GOV.UK · last 120 days</span></div><div class="list">` +
+      gov.slice(0, 12).map(g => `<a class="row" href="${esc(g.url)}" target="_blank" rel="noopener">
+        <span><small class="kind">${esc((g.orgs || []).join(", "))}${g.format ? " · " + esc(g.format) : ""}</small>${esc(g.title)}</span><span>${fmtDate(g.date)}</span></a>`).join("") + `</div>`);
+  }
+  if (!alerts.length && !gov.length) main.insertAdjacentHTML("beforeend", `<div class="empty">Guidance and alerts arrive with the next daily run.</div>`);
+
+  const today = day?.food || [];
+  if (today.length) {
+    main.insertAdjacentHTML("beforeend", `<div class="label">Today's research <span class="n">${today.length} papers</span></div>`);
+    today.forEach(it => main.append(card(it, { compact: true })));
+  }
+  const ids = new Set(today.map(x => x.id));
+  const recent = (DOMIDX.domains["Food industry"] || []).filter(x => !ids.has(x.id));
+  if (recent.length) {
+    main.insertAdjacentHTML("beforeend", `<div class="label">Last 14 days <span class="n">${recent.length} papers</span></div>`);
+    recent.forEach(it => main.append(card(it, { compact: true })));
+  }
+
+  main.insertAdjacentHTML("beforeend", `<div class="label">Standards and guidelines</div><div class="list">` +
+    FOOD_REFS.map(([t, u, src]) => `<a class="row" href="${u}" target="_blank" rel="noopener"><span>${esc(t)}</span><span>${esc(src)}</span></a>`).join("") + `</div>`);
+
+  store.set("views", views);
+  startDeepPool({
+    journals: CFG.journals.filter(j => j.d === "Food industry"),
+    modes: ["recent", "review", "classic", "wild"],
+    intro: `<div class="caught"><b>More from the food-safety journals</b>Endless papers: recent standouts, reviews and classics.</div>`,
+  });
+}
+
 /* ---------------------------------------------------------- archive --- */
 async function renderArchive() {
   stopPool();
@@ -521,6 +580,7 @@ function route() {
   if (!tab || tab === "today") return renderToday();
   if (tab === "day") { stopPool(); return renderToday(arg); }
   if (tab === "fund") return renderFund();
+  if (tab === "food") return renderFood();
   if (tab === "domains") return renderDomains();
   if (tab === "domain") return renderDomains(decodeURIComponent(arg || ""));
   if (tab === "archive") return renderArchive();
