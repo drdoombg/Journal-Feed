@@ -365,6 +365,7 @@ def daily(today, cfg):
         existing["fundamentals"] = fundamentals
         for lst in ("picks", "more", "shortlist"):
             for it in existing.get(lst, []):
+                it.pop("fig", None)                  # refetch with current parser
                 fresh = everything.get(it["id"])
                 if fresh:
                     for k in ("license", "pmcid", "arxiv", "oa", "oa_url"):
@@ -537,7 +538,11 @@ def arxiv_figure(aid):
         if not img:
             continue
         cap = re.search(r"<figcaption[^>]*>(.*?)</figcaption>", inner, re.S)
-        caption = H.unescape(re.sub(r"<[^>]+>", " ", cap.group(1))) if cap else ""
+        cap_html = cap.group(1) if cap else ""
+        # MathML carries the formula twice (rendered + LaTeX); keep one readable copy
+        cap_html = re.sub(r'<math[^>]*alttext="([^"]*)"[^>]*>.*?</math>',
+                          lambda mm: " " + H.unescape(mm.group(1)) + " ", cap_html, flags=re.S)
+        caption = H.unescape(re.sub(r"<[^>]+>", " ", cap_html))
         caption = " ".join(caption.split())
         label_m = re.match(r"((?:Figure|Fig\.)\s*\d+)[:.]?\s*", caption)
         label = label_m.group(1) if label_m else "Figure 1"
