@@ -1,0 +1,462 @@
+{
+ "0003-486X": {
+  "id": "S45918994",
+  "name": "Annals of Mathematics",
+  "how": "issn"
+ },
+ "0020-9910": {
+  "id": "S98347115",
+  "name": "Inventiones mathematicae",
+  "how": "issn"
+ },
+ "0001-5962": {
+  "id": "S113542759",
+  "name": "Acta Mathematica",
+  "how": "issn"
+ },
+ "0894-0347": {
+  "id": "S130224168",
+  "name": "Journal of the American Mathematical Society",
+  "how": "issn"
+ },
+ "0012-7094": {
+  "id": "S171170845",
+  "name": "Duke Mathematical Journal",
+  "how": "issn"
+ },
+ "0036-1445": {
+  "id": "S160107561",
+  "name": "SIAM Review",
+  "how": "issn"
+ },
+ "0031-9007": {
+  "id": "S24807848",
+  "name": "Physical Review Letters",
+  "how": "issn"
+ },
+ "0034-6861": {
+  "id": "S73260565",
+  "name": "Reviews of Modern Physics",
+  "how": "issn"
+ },
+ "2160-3308": {
+  "id": "S137042341",
+  "name": "Physical Review X",
+  "how": "issn"
+ },
+ "2470-0045": {
+  "id": "S4210235286",
+  "name": "Physical review. E",
+  "how": "issn"
+ },
+ "1745-2473": {
+  "id": "S156274416",
+  "name": "Nature Physics",
+  "how": "issn"
+ },
+ "0002-7863": {
+  "id": "S111155417",
+  "name": "Journal of the American Chemical Society",
+  "how": "issn"
+ },
+ "1433-7851": {
+  "id": "S67393510",
+  "name": "Angewandte Chemie International Edition",
+  "how": "issn"
+ },
+ "1755-4330": {
+  "id": "S202193212",
+  "name": "Nature Chemistry",
+  "how": "issn"
+ },
+ "0009-2665": {
+  "id": "S41143188",
+  "name": "Chemical Reviews",
+  "how": "issn"
+ },
+ "0306-0012": {
+  "id": "S316438",
+  "name": "Chemical Society Reviews",
+  "how": "issn"
+ },
+ "0092-8674": {
+  "id": "S110447773",
+  "name": "Cell",
+  "how": "issn"
+ },
+ "1548-7091": {
+  "id": "S127827428",
+  "name": "Nature Methods",
+  "how": "issn"
+ },
+ "1061-4036": {
+  "id": "S137905309",
+  "name": "Nature Genetics",
+  "how": "issn"
+ },
+ "0066-4154": {
+  "id": "S53860259",
+  "name": "Annual Review of Biochemistry",
+  "how": "issn"
+ },
+ "1074-7613": {
+  "id": "S199671312",
+  "name": "Immunity",
+  "how": "issn"
+ },
+ "1529-2908": {
+  "id": "S41063453",
+  "name": "Nature Immunology",
+  "how": "issn"
+ },
+ "0022-1007": {
+  "id": "S22947807",
+  "name": "The Journal of Experimental Medicine",
+  "how": "issn"
+ },
+ "0028-4793": {
+  "id": "S62468778",
+  "name": "New England Journal of Medicine",
+  "how": "issn"
+ },
+ "0140-6736": {
+  "id": "S49861241",
+  "name": "The Lancet",
+  "how": "issn"
+ },
+ "0098-7484": {
+  "id": "S172573765",
+  "name": "JAMA",
+  "how": "issn"
+ },
+ "0959-8138": {
+  "id": "S192814187",
+  "name": "BMJ",
+  "how": "issn"
+ },
+ "1078-8956": {
+  "id": "S203256638",
+  "name": "Nature Medicine",
+  "how": "issn"
+ },
+ "0003-4819": {
+  "id": "S119722071",
+  "name": "Annals of Internal Medicine",
+  "how": "issn"
+ },
+ "0009-7322": {
+  "id": "S116251202",
+  "name": "Circulation",
+  "how": "issn"
+ },
+ "0006-4971": {
+  "id": "S200071133",
+  "name": "Blood",
+  "how": "issn"
+ },
+ "2213-2600": {
+  "id": "S4210192742",
+  "name": "The Lancet Respiratory Medicine",
+  "how": "issn"
+ },
+ "0004-5411": {
+  "id": "S118992489",
+  "name": "Journal of the ACM",
+  "how": "issn"
+ },
+ "1532-4435": {
+  "id": "S118988714",
+  "name": "Journal of Machine Learning Research",
+  "how": "issn"
+ },
+ "0162-8828": {
+  "id": "S199944782",
+  "name": "IEEE Transactions on Pattern Analysis and Machine Intelligence",
+  "how": "issn"
+ },
+ "0001-0782": {
+  "id": "S103482838",
+  "name": "Communications of the ACM",
+  "how": "issn"
+ },
+ "0033-295X": {
+  "id": "S35223124",
+  "name": "Psychological Review",
+  "how": "issn"
+ },
+ "0033-2909": {
+  "id": "S75627607",
+  "name": "Psychological Bulletin",
+  "how": "issn"
+ },
+ "0066-4308": {
+  "id": "S90670110",
+  "name": "Annual Review of Psychology",
+  "how": "issn"
+ },
+ "0140-525X": {
+  "id": "S59628311",
+  "name": "Behavioral and Brain Sciences",
+  "how": "issn"
+ },
+ "2397-3374": {
+  "id": "S2764866340",
+  "name": "Nature Human Behaviour",
+  "how": "issn"
+ },
+ "0956-7976": {
+  "id": "S58854535",
+  "name": "Psychological Science",
+  "how": "issn"
+ },
+ "0002-8282": {
+  "id": "S23254222",
+  "name": "American Economic Review",
+  "how": "issn"
+ },
+ "0012-9682": {
+  "id": "S95464858",
+  "name": "Econometrica",
+  "how": "issn"
+ },
+ "0033-5533": {
+  "id": "S203860005",
+  "name": "The Quarterly Journal of Economics",
+  "how": "issn"
+ },
+ "0022-3808": {
+  "id": "S95323914",
+  "name": "Journal of Political Economy",
+  "how": "issn"
+ },
+ "0034-6527": {
+  "id": "S88935262",
+  "name": "The Review of Economic Studies",
+  "how": "issn"
+ },
+ "0895-3309": {
+  "id": "S72880728",
+  "name": "The Journal of Economic Perspectives",
+  "how": "issn"
+ },
+ "0022-0515": {
+  "id": "S127708089",
+  "name": "Journal of Economic Literature",
+  "how": "issn"
+ },
+ "0001-4273": {
+  "id": "S117778295",
+  "name": "Academy of Management Journal",
+  "how": "issn"
+ },
+ "0363-7425": {
+  "id": "S46763546",
+  "name": "Academy of Management Review",
+  "how": "issn"
+ },
+ "0001-8392": {
+  "id": "S143668711",
+  "name": "Administrative Science Quarterly",
+  "how": "issn"
+ },
+ "0143-2095": {
+  "id": "S102949365",
+  "name": "Strategic Management Journal",
+  "how": "issn"
+ },
+ "0025-1909": {
+  "id": "S33323087",
+  "name": "Management Science",
+  "how": "issn"
+ },
+ "0022-1082": {
+  "id": "S5353659",
+  "name": "The Journal of Finance",
+  "how": "issn"
+ },
+ "0304-405X": {
+  "id": "S149240962",
+  "name": "Journal of Financial Economics",
+  "how": "issn"
+ },
+ "0004-637X": {
+  "id": "S1980519",
+  "name": "The Astrophysical Journal",
+  "how": "issn"
+ },
+ "0035-8711": {
+  "id": "S195663288",
+  "name": "Monthly Notices of the Royal Astronomical Society",
+  "how": "issn"
+ },
+ "2397-3366": {
+  "id": "S2764494557",
+  "name": "Nature Astronomy",
+  "how": "issn"
+ },
+ "0066-4146": {
+  "id": "S29882555",
+  "name": "Annual Review of Astronomy and Astrophysics",
+  "how": "issn"
+ },
+ "1752-0894": {
+  "id": "S48977010",
+  "name": "Nature Geoscience",
+  "how": "issn"
+ },
+ "8755-1209": {
+  "id": "S129102366",
+  "name": "Reviews of Geophysics",
+  "how": "issn"
+ },
+ "1758-678X": {
+  "id": "S183584863",
+  "name": "Nature Climate Change",
+  "how": "issn"
+ },
+ "1476-1122": {
+  "id": "S103895331",
+  "name": "Nature Materials",
+  "how": "issn"
+ },
+ "2520-1131": {
+  "id": "S4210239724",
+  "name": "Nature Electronics",
+  "how": "issn"
+ },
+ "0018-9200": {
+  "id": "S83637746",
+  "name": "IEEE Journal of Solid-State Circuits",
+  "how": "issn"
+ },
+ "0278-0070": {
+  "id": "S100835903",
+  "name": "IEEE Transactions on Computer-Aided Design of Integrated Circuits and Systems",
+  "how": "issn"
+ },
+ "0018-9286": {
+  "id": "S184954342",
+  "name": "IEEE Transactions on Automatic Control",
+  "how": "issn"
+ },
+ "2058-7546": {
+  "id": "S2764528046",
+  "name": "Nature Energy",
+  "how": "issn"
+ },
+ "2470-9476": {
+  "id": "S4210213233",
+  "name": "Science Robotics",
+  "how": "issn"
+ },
+ "1087-0156": {
+  "id": "S106963461",
+  "name": "Nature Biotechnology",
+  "how": "issn"
+ },
+ "2157-846X": {
+  "id": "S2764624792",
+  "name": "Nature Biomedical Engineering",
+  "how": "issn"
+ },
+ "0031-8108": {
+  "id": "S35579339",
+  "name": "The Philosophical Review",
+  "how": "issn"
+ },
+ "0026-4423": {
+  "id": "S37480348",
+  "name": "Mind",
+  "how": "issn"
+ },
+ "0029-4624": {
+  "id": "S170801797",
+  "name": "Noûs",
+  "how": "issn"
+ },
+ "0002-8762": {
+  "id": "S197437610",
+  "name": "The American Historical Review",
+  "how": "issn"
+ },
+ "0031-2746": {
+  "id": "S42922845",
+  "name": "Past & Present",
+  "how": "issn"
+ },
+ "0093-1896": {
+  "id": "S121755651",
+  "name": "Critical Inquiry",
+  "how": "issn"
+ },
+ "0003-1224": {
+  "id": "S157620343",
+  "name": "American Sociological Review",
+  "how": "issn"
+ },
+ "0002-9602": {
+  "id": "S122471516",
+  "name": "American Journal of Sociology",
+  "how": "issn"
+ },
+ "0360-0572": {
+  "id": "S61274580",
+  "name": "Annual Review of Sociology",
+  "how": "issn"
+ },
+ "0003-0554": {
+  "id": "S176007004",
+  "name": "American Political Science Review",
+  "how": "issn"
+ },
+ "0017-811X": {
+  "id": "S117766065",
+  "name": "Harvard Law Review",
+  "how": "issn"
+ },
+ "2468-2667": {
+  "id": "S2764808104",
+  "name": "The Lancet Public Health",
+  "how": "issn"
+ },
+ "0163-7525": {
+  "id": "S113591250",
+  "name": "Annual Review of Public Health",
+  "how": "issn"
+ },
+ "0002-9165": {
+  "id": "S71285955",
+  "name": "American Journal of Clinical Nutrition",
+  "how": "issn"
+ },
+ "0199-9885": {
+  "id": "S160110530",
+  "name": "Annual Review of Nutrition",
+  "how": "issn"
+ },
+ "0161-8105": {
+  "id": "S42921845",
+  "name": "SLEEP",
+  "how": "issn"
+ },
+ "1529-1006": {
+  "id": "S1025063068",
+  "name": "Psychological Science in the Public Interest",
+  "how": "issn"
+ },
+ "0028-0836": {
+  "id": "S137773608",
+  "name": "Nature",
+  "how": "issn"
+ },
+ "0036-8075": {
+  "id": "S3880285",
+  "name": "Science",
+  "how": "issn"
+ },
+ "0027-8424": {
+  "id": "S125754415",
+  "name": "Proceedings of the National Academy of Sciences",
+  "how": "issn"
+ }
+}
