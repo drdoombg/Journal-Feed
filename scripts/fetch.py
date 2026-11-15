@@ -448,6 +448,7 @@ EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
 REUSABLE = re.compile(r"^(cc[- ]?by|cc0|public[- ]domain|pd)", re.I)
 FIG_CACHE = {}
 HTTP_LAST = {"url": ""}
+DEBUG = {"n": 0}
 FIG_STATS = {"epmc_id": 0, "epmc_fig": 0, "arxiv_try": 0, "arxiv_fig": 0}
 
 
@@ -459,7 +460,11 @@ def http_get(url, accept=None, max_bytes=None):
             body = r.read(max_bytes) if max_bytes else r.read()
             HTTP_LAST["url"] = r.geturl()
             return r.status, r.headers.get("Content-Type", ""), body
-    except Exception:
+    except urllib.error.HTTPError as e:
+        HTTP_LAST["url"] = url
+        return e.code, e.headers.get("Content-Type", "") if e.headers else "", b""
+    except Exception as e:
+        HTTP_LAST["url"] = f"{url} ({type(e).__name__}: {e})"
         return None, "", b""
     finally:
         time.sleep(0.15)
@@ -485,6 +490,7 @@ def key_figure(pmcid):
     """Graphical abstract if the paper has one, otherwise Figure 1."""
     import xml.etree.ElementTree as ET
     st, _, body = http_get(f"{EPMC}/{pmcid}/fullTextXML")
+    print(f"    [dbg epmc {pmcid}] xml st={st} len={len(body)} figs={body.count(b'<fig ')}")
     if st != 200 or not body:
         return None
     try:
@@ -511,6 +517,7 @@ def key_figure(pmcid):
     name = href if re.search(r"\.(jpe?g|png|gif)$", href, re.I) else href + ".jpg"
     src = f"https://europepmc.org/articles/{pmcid}/bin/{name}"
     st, ctype, _ = http_get(src, max_bytes=64)
+    print(f"    [dbg epmc img] {src} st={st} type={ctype}")
     if st != 200 or not ctype.startswith("image"):
         return None
     return {"src": src, "label": pick["label"], "caption": clip(pick["caption"], 700), "ga": pick["ga"]}
@@ -520,8 +527,14 @@ def arxiv_figure(aid):
     """First figure from arXiv's HTML rendering of the paper (exists for most
     papers submitted with LaTeX source since late 2023)."""
     import html as H
-    st, _, body = http_get(f"https://arxiv.org/html/{aid}")
+    st, ctype0, body = http_get(f"https://arxiv.org/html/{aid}")
     time.sleep(2.5)                                   # be polite to arXiv
+    if DEBUG["n"] < 6:
+        DEBUG["n"] += 1
+        pg = body.decode("utf-8", "replace") if body else ""
+        print(f"    [dbg arxiv {aid}] st={st} type={ctype0} len={len(body)} final={HTTP_LAST['url']} "
+              f"figures={pg.count('<figure')} ltx_figure={pg.count('ltx_figure')} imgs={pg.count('<img')} "
+              f"snippet={re.sub(chr(10), ' ', pg[pg.find('<figure'):pg.find('<figure')+300]) if '<figure' in pg else pg[:200]!r}")
     if st != 200 or not body:
         return None
     base = HTTP_LAST["url"].rstrip("/") + "/"
@@ -540,6 +553,8 @@ def arxiv_figure(aid):
             caption = caption[label_m.end():]
         src = urllib.parse.urljoin(base, img.group(1))
         st2, ctype, _ = http_get(src, max_bytes=64)
+        if DEBUG["n"] <= 6:
+            print(f"    [dbg arxiv img] {src} st={st2} type={ctype}")
         if st2 == 200 and ctype.startswith("image"):
             return {"src": src, "label": label, "caption": clip(caption, 700), "ga": False, "via": "arXiv"}
         return None
