@@ -2,7 +2,7 @@ name: Daily feed
 
 on:
   schedule:
-    - cron: "20 5 * * *"        # 05:20 UTC every day
+    - cron: "50 3 * * *"        # 03:50 UTC daily (GitHub may delay a little); commentary follows at 04:37 London
   workflow_dispatch:
     inputs:
       retro:
