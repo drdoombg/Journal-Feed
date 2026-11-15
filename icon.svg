@@ -1,6 +1,20 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
-  <rect width="512" height="512" rx="112" fill="#0d0f12"/>
-  <circle cx="256" cy="256" r="150" fill="none" stroke="#6ea8ff" stroke-width="28"/>
-  <circle cx="256" cy="256" r="62" fill="#6ea8ff"/>
-  <path d="M356 156 L410 102" stroke="#9ad1a5" stroke-width="28" stroke-linecap="round"/>
+  <defs>
+    <clipPath id="disc"><circle cx="256" cy="256" r="240"/></clipPath>
+  </defs>
+  <circle cx="256" cy="256" r="240" fill="#F3C24F"/>
+  <!-- long shadow, 45° to the lower right -->
+  <g clip-path="url(#disc)" fill="#DDA93A">
+    <polygon points="146,169 336,169 636,469 636,503 446,503 146,203"/>
+    <polygon points="146,239 296,239 596,539 596,573 446,573 146,273"/>
+    <polygon points="146,309 246,309 546,609 546,643 446,643 146,343"/>
+    <polygon points="391.7,140.3 356.3,175.7 656.3,475.7 691.7,440.3"/>
+  </g>
+  <!-- mark: three lines of a feed and a marker dot -->
+  <g stroke="#232842" stroke-width="34" stroke-linecap="round">
+    <line x1="163" y1="186" x2="319" y2="186"/>
+    <line x1="163" y1="256" x2="279" y2="256"/>
+    <line x1="163" y1="326" x2="229" y2="326"/>
+  </g>
+  <circle cx="374" cy="158" r="25" fill="#232842"/>
 </svg>
