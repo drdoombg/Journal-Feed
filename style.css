@@ -35,6 +35,29 @@ main{max-width:720px;margin:0 auto;padding:14px 12px 60px}
 .thread h3{margin:0 0 6px;font-size:13px;color:var(--accent);letter-spacing:.6px;text-transform:uppercase}
 .thread p{margin:0;color:#cfd8e6;font-size:15px}
 
+/* upstream card (fundamentals) */
+.upstream{background:linear-gradient(180deg,#1d1a2c,#16151f);border:1px solid #3a3157;border-radius:var(--r);padding:16px 18px;margin-bottom:12px}
+.upstream h3{margin:0 0 8px;font-size:13px;color:#c9a7ff;letter-spacing:.6px;text-transform:uppercase}
+.upstream p{margin:0 0 6px;color:#e2dcf2;font-size:15.5px}
+.upstream .up-sub{color:#9a8fbf;font-size:11.5px;letter-spacing:.6px;text-transform:uppercase;margin:12px 0 4px}
+.upstream ul{margin:0;padding-left:18px;color:#cfc8e4;font-size:14px}
+.upstream li{margin:3px 0}
+.upstream li a{text-decoration:none;border-bottom:1px solid #4a4070}
+.upstream li a:hover{color:#c9a7ff}
+.upstream li span{color:#7d74a0;font-size:12.5px}
+.upstream .up-q{margin-top:12px;padding-top:10px;border-top:1px solid #3a3157;color:#ddd5f2;font-size:14.5px}
+.upstream .up-q b{color:#c9a7ff;font-weight:600}
+
+/* domains */
+.dgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+.dtile{display:block;text-decoration:none;background:var(--panel);border:1px solid var(--line);border-left:4px solid var(--c);
+  border-radius:12px;padding:14px 14px 12px}
+.dtile:hover{background:var(--panel2)}
+.dtile b{display:block;font-size:14.5px;color:var(--ink);margin-bottom:3px}
+.dtile span{font-size:12px;color:var(--dimmer)}
+.back{display:inline-block;color:var(--dim);text-decoration:none;font-size:13.5px;margin:4px 4px 0}
+.back:hover{color:var(--ink)}
+
 /* paper card */
 .card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px 10px;margin-bottom:12px}
 .card.compact{padding:12px 14px 8px}

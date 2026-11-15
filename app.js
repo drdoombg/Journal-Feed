@@ -204,22 +204,22 @@ async function renderToday(date) {
 
 /* --------------------------------------------------------- deep pool --- */
 const MODES = ["recent", "classic", "review", "recent", "wild"];
-const MODE_LABEL = { recent: "Recent standouts", classic: "Classics", review: "Reviews", wild: "Anything good" };
-let pool = { on: false, busy: false, i: 0, dead: false, io: null };
+const MODE_LABEL = { recent: "Recent standouts", classic: "Classics", review: "Reviews", wild: "Anything good",
+  foundation: "Foundational classics", modern: "Modern foundations" };
+let pool = { on: false, busy: false, i: 0, dead: false, io: null, journals: null, modes: MODES };
 
-function startDeepPool() {
-  main.insertAdjacentHTML("beforeend", `
-    <div class="caught"><b>You're caught up.</b>Today's picks are done. Below is the deep pool:
-    random papers from the same journals, weighted towards domains you've seen least.</div>
-    <div id="pool"></div><div class="loader" id="poolSentinel">…</div>`);
-  pool = { on: true, busy: false, i: 0, dead: false, io: null };
+function startDeepPool(opt = {}) {
+  const intro = opt.intro ?? `<div class="caught"><b>You're caught up.</b>Today's picks are done. Below is the deep pool:
+    random papers from the same journals, weighted towards domains you've seen least.</div>`;
+  main.insertAdjacentHTML("beforeend", `${intro}<div id="pool"></div><div class="loader" id="poolSentinel">…</div>`);
+  pool = { on: true, busy: false, i: 0, dead: false, io: null, journals: opt.journals || null, modes: opt.modes || MODES };
   pool.io = new IntersectionObserver(es => { if (es.some(e => e.isIntersecting)) loadPool(); }, { rootMargin: "800px" });
   pool.io.observe($("#poolSentinel"));
 }
 
 function pickIssns(n) {
   // weight journals by how little their domain has been viewed
-  const js = CFG.journals;
+  const js = pool.journals || CFG.journals;
   const w = js.map(j => 1 / Math.sqrt(1 + (views[j.d] || 0)) * (j.t === 3 ? 1.4 : 1));
   const out = new Set();
   let guard = 0;
@@ -233,9 +233,11 @@ function pickIssns(n) {
 async function loadPool() {
   if (!pool.on || pool.busy || pool.dead) return;
   pool.busy = true;
-  const mode = MODES[pool.i++ % MODES.length];
+  const mode = pool.modes[pool.i++ % pool.modes.length];
   const y = new Date().getFullYear();
   const f = [`primary_location.source.issn:${pickIssns(18).join("|")}`];
+  if (mode === "foundation") f.push(`to_publication_date:${y - 10}-12-31`, "cited_by_count:>1500", "type:article|review");
+  if (mode === "modern") f.push(`from_publication_date:${y - 10}-01-01`, "cited_by_count:>300", "type:article");
   if (mode === "recent") f.push(`from_publication_date:${y - 3}-01-01`, "cited_by_count:>25", "type:article|review");
   if (mode === "classic") f.push(`to_publication_date:${y - 6}-12-31`, "cited_by_count:>700", "type:article|review");
   if (mode === "review") f.push("type:review", "cited_by_count:>120");
@@ -257,7 +259,7 @@ async function loadPool() {
         date: w.publication_date, review: w.type === "review" || !!j.review, cited: w.cited_by_count || 0,
         authors: auths.slice(0, 4), n_auth: auths.length, abstract: absFromIndex(w.abstract_inverted_index),
         oa: !!w.open_access?.is_oa, oa_url: w.best_oa_location?.pdf_url || w.best_oa_location?.landing_page_url || "",
-        classic: mode === "classic",
+        classic: mode === "classic" || mode === "foundation",
       };
     }).filter(it => it.title && !JUNK.test(it.title) && !shownIds.has(it.id));
     if (items.length) {
@@ -275,6 +277,88 @@ async function loadPool() {
   // keep filling if the sentinel is still on screen
   const s = $("#poolSentinel");
   if (!pool.dead && s && s.getBoundingClientRect().top < innerHeight + 800) setTimeout(loadPool, 250);
+}
+
+/* ------------------------------------------------------ fundamentals --- */
+const scholar = q => `https://scholar.google.com/scholar?q=${encodeURIComponent(q)}`;
+
+async function renderFund() {
+  stopPool();
+  main.innerHTML = `<div class="loader">Loading…</div>`;
+  let day = null, com = null;
+  try { day = await getJSON("data/latest.json", { cache: "no-store" }); } catch {}
+  if (day) { try { com = await getJSON(`data/commentary/${day.date}.json`, { cache: "no-store" }); } catch {} }
+  main.innerHTML = "";
+
+  const up = com?.upstream;
+  if (up?.principle) {
+    const byId = {};
+    for (const it of [...(day.shortlist || []), ...day.picks, ...(day.more || []), ...(day.fundamentals || [])]) byId[it.id] = it;
+    const chain = (up.chain || []).map(id => byId[id]).filter(Boolean);
+    const el = document.createElement("div"); el.className = "upstream";
+    el.innerHTML = `
+      <h3>Upstream · ${esc(up.title || "today's principle")}</h3>
+      <p>${esc(up.principle)}</p>
+      ${chain.length ? `<div class="up-sub">Climbed from</div><ul>${chain.map(c => `<li><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a> <span>${esc(c.journal)}</span></li>`).join("")}</ul>` : ""}
+      ${up.foundations?.length ? `<div class="up-sub">The foundations underneath</div><ul>${up.foundations.map(f => `<li><a href="${scholar(f)}" target="_blank" rel="noopener">${esc(f)}</a></li>`).join("")}</ul>` : ""}
+      ${up.question ? `<div class="up-q"><b>Open question:</b> ${esc(up.question)}</div>` : ""}`;
+    main.append(el);
+  } else {
+    main.insertAdjacentHTML("beforeend", `<div class="upstream"><h3>Upstream</h3><p style="color:var(--dim)">Today's upstream card hasn't been written yet. Claude writes it each morning along with the commentary.</p></div>`);
+  }
+
+  const cands = day?.fundamentals || [];
+  const fnotes = com?.fundamentals?.notes || {};
+  const fOrder = (com?.fundamentals?.order || []).filter(id => cands.some(c => c.id === id));
+  const chosen = fOrder.length ? fOrder.map(id => cands.find(c => c.id === id)) : [];
+  if (chosen.length) {
+    main.insertAdjacentHTML("beforeend", `<div class="label">Shifts in the foundations <span class="n">${chosen.length}</span></div>`);
+    chosen.forEach(it => main.append(card({ ...it, note: fnotes[it.id] })));
+  }
+  const rest = cands.filter(c => !fOrder.includes(c.id));
+  if (rest.length) {
+    main.insertAdjacentHTML("beforeend", `<div class="label">${chosen.length ? "Other candidates" : "Foundational candidates"} <span class="n">nominated by rules, ${rest.length}</span></div>`);
+    rest.forEach(it => main.append(card(it, { compact: true })));
+  }
+  if (!cands.length && !up) main.insertAdjacentHTML("beforeend", `<div class="empty">No fundamentals scanned yet. They arrive with the next daily run.</div>`);
+
+  store.set("views", views);
+  startDeepPool({
+    journals: CFG.journals.filter(j => j.f || j.t === 3),
+    modes: ["foundation", "modern", "foundation", "review"],
+    intro: `<div class="caught"><b>Foundational classics</b>Endless papers that built today's foundations, from theory-oriented journals and flagships.</div>`,
+  });
+}
+
+/* ----------------------------------------------------------- domains --- */
+let DOMIDX = null;
+async function renderDomains(dom) {
+  stopPool();
+  main.innerHTML = `<div class="loader">Loading…</div>`;
+  if (!DOMIDX) { try { DOMIDX = await getJSON("data/domains.json", { cache: "no-store" }); } catch { DOMIDX = { domains: {} }; } }
+  const doms = Object.keys(CFG.domains);
+  if (!dom) {
+    main.innerHTML = `<div class="label">Domains <span class="n">best papers scanned in the last 14 days</span></div><div class="dgrid">` +
+      doms.map(d => {
+        const n = (DOMIDX.domains[d] || []).length, col = CFG.domains[d];
+        const js = CFG.journals.filter(j => j.d === d).length;
+        return `<a class="dtile" href="#domain/${encodeURIComponent(d)}" style="--c:${col}">
+          <b>${esc(d)}</b><span>${n} recent · ${js} journals</span></a>`;
+      }).join("") + `</div>`;
+    return;
+  }
+  const items = DOMIDX.domains[dom] || [];
+  const col = CFG.domains[dom] || "#aaa";
+  main.innerHTML = `<a class="back" href="#domains">← All domains</a>
+    <div class="label" style="color:${col}">${esc(dom)} <span class="n">${items.length} recent papers</span></div>`;
+  if (!items.length) main.insertAdjacentHTML("beforeend", `<div class="empty">Nothing scanned in this domain in the last 14 days yet.</div>`);
+  items.forEach(it => main.append(card(it, { compact: true })));
+  store.set("views", views);
+  startDeepPool({
+    journals: CFG.journals.filter(j => j.d === dom),
+    modes: ["recent", "classic", "review", "wild"],
+    intro: `<div class="caught"><b>More from ${esc(dom)}</b>Endless papers from this domain's journals: recent standouts, classics and reviews.</div>`,
+  });
 }
 
 /* ---------------------------------------------------------- archive --- */
@@ -342,12 +426,15 @@ function stopPool() { pool.on = false; pool.io?.disconnect(); }
 function route() {
   const h = location.hash.slice(1);
   const [tab, arg] = h.split("/");
-  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on",
-    b.dataset.tab === (tab === "day" ? "archive" : (tab || "today"))));
+  const active = tab === "day" ? "archive" : tab === "domain" ? "domains" : (tab || "today");
+  document.querySelectorAll("#tabs button").forEach(b => b.classList.toggle("on", b.dataset.tab === active));
   shownIds.clear();
   window.scrollTo(0, 0);
   if (!tab || tab === "today") return renderToday();
   if (tab === "day") { stopPool(); return renderToday(arg); }
+  if (tab === "fund") return renderFund();
+  if (tab === "domains") return renderDomains();
+  if (tab === "domain") return renderDomains(decodeURIComponent(arg || ""));
   if (tab === "archive") return renderArchive();
   if (tab === "retro") return renderRetro(arg);
   if (tab === "saved") return renderSaved();

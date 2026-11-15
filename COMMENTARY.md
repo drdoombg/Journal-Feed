@@ -41,6 +41,40 @@ Be sceptical of: superlatives in abstracts, small samples with big claims,
 least 5 domains. Ignore anything that's plainly not research (news, comment,
 corrections) that slipped through.
 
+## Fundamentals (second job)
+
+`fundamentals` in `data/latest.json` lists ~25 papers that rules nominated as
+possibly foundational. Rules only see words like "theory" and "universal", so
+most nominees are false positives. Choose **0–5** that genuinely change the
+foundations a field rests on: a new principle, an overturned assumption, a
+unification, a proof that settles a framing question, a mechanism that
+explains *why* rather than *what*. Expansion (applying a known idea somewhere
+new, or a better number) does not count, however good. Choosing zero on a
+thin day is correct.
+
+For each chosen paper, write a note in the form
+`Shifts: <the assumption or framing before> → <what it is now>. <one sentence on why that matters upstream>.`
+Keep it to 25–50 words.
+
+## Upstream card (third job)
+
+Take today's picks (and fundamentals, if useful) and climb upstream: what is
+the deeper principle that two or more of them are instances of? Write it so it
+would change how the reader thinks about all of them, and beyond.
+
+- `title`: the principle in at most 8 words.
+- `principle`: 80–150 words. State the principle, show how each paper in the
+  chain is a case of it, and say where else it applies.
+- `chain`: 2–4 paper ids from today's file that you climbed from.
+- `foundations`: 1–3 canonical earlier works the principle rests on, written as
+  `Author (Year). Title`. **Only works you are certain exist**: landmark
+  papers or books, not obscure ones. Never invent a reference. The app turns
+  each into a Google Scholar search, so no URLs.
+- `question`: one open question at the frontier of this principle.
+
+If no honest upstream connection exists today, set `upstream` to null rather
+than forcing one.
+
 ## Output schema
 
 ```json
@@ -51,7 +85,18 @@ corrections) that slipped through.
     "W123": "Why it matters, in 25–45 words."
   },
   "thread": "Optional: up to 80 words linking two or more of today's picks across domains. Use null if no connection is real.",
-  "taste": "One line on how votes tilted today's picks, or null."
+  "taste": "One line on how votes tilted today's picks, or null.",
+  "fundamentals": {
+    "order": ["0 to 5 ids from the fundamentals list"],
+    "notes": {"W789": "Shifts: ... → .... Why it matters upstream."}
+  },
+  "upstream": {
+    "title": "...",
+    "principle": "...",
+    "chain": ["W123", "W456"],
+    "foundations": ["Author (Year). Title"],
+    "question": "..."
+  }
 }
 ```
 
@@ -68,4 +113,6 @@ corrections) that slipped through.
 
 - `order` has exactly 10 ids, all present in `shortlist`, no duplicates.
 - Every id in `order` has a note.
+- `fundamentals.order` has 0–5 ids, all present in the `fundamentals` list, each with a note.
+- `upstream` is null, or its `chain` ids all appear in today's file.
 - The file parses as JSON.

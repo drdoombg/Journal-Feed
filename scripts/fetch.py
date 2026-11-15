@@ -193,6 +193,7 @@ def to_item(w, j):
         "issn": j["issn"],
         "d": j["d"],
         "tier": j["t"],
+        "f": 1 if j.get("f") else 0,
         "date": w.get("publication_date"),
         "type": w.get("type"),
         "review": bool(w.get("type") == "review" or j.get("review")),
@@ -238,6 +239,43 @@ def score(it, bias):
     return round(s, 2)
 
 
+# Fundamentals: research that changes the foundations a field rests on, rather
+# than extending it. Rules can only nominate; Claude makes the final call.
+FUND_POS = [
+    (r"\btheor(y|ies|em|ems|etical framework)\b", 4), (r"\bconjecture\b", 5), (r"\bproof\b|\bwe prove\b", 4),
+    (r"\bprinciples?\b", 3), (r"\buniversal(ity)?\b", 4), (r"\bunif(y|ied|ying|ication)\b", 5),
+    (r"\bfirst[- ]principles?\b", 5), (r"\bfundamental\b", 3), (r"\bparadigm\b", 3), (r"\bfoundations?\b", 3),
+    (r"\borigins? of\b", 3), (r"\bemergen(ce|t)\b", 3), (r"\bsymmetr(y|ies)\b", 2), (r"\binvarian(t|ce)\b", 2),
+    (r"\blaws? of\b|\bscaling laws?\b", 3), (r"\bgeneral (theory|framework|mechanism|principle)\b", 5),
+    (r"\bwe (propose|develop|introduce) a (new |general |unified |formal )?(theory|framework|model of)\b", 5),
+    (r"\bexplains? why\b|\bwhy (do|does|is|are)\b", 3), (r"\bcounterintuitive|paradox\b", 3),
+    (r"\bchallenges? the (view|assumption|consensus)\b|\bcontrary to\b|\boverturn", 5),
+    (r"\bmechanis(m|ms|tic)\b", 1), (r"\banalytic(al|ally)?\b", 1), (r"\bconceptual\b", 2),
+    (r"\bminimal model\b|\bsimple rules?\b", 4), (r"\bthermodynamic|entropy|information[- ]theor", 2),
+]
+FUND_NEG = [
+    (r"\bcohort\b|\bpatients?\b|\brandomi[sz]ed\b|\btrial\b", 3), (r"\bcase (study|report)\b", 4),
+    (r"\bbenchmark\b|\bdataset\b|\bsurvey (data|of)\b", 2), (r"\bwe report\b", 1),
+    (r"\bdevice\b|\bperformance\b|\befficiency\b|\byield\b", 1), (r"\bguideline|recommendation", 3),
+    (r"\bprevalence\b|\bincidence\b|\bcost[- ]effective", 3),
+]
+
+
+def fund_score(it):
+    if not it["abstract"]:
+        return 0.0
+    text = (it["title"] + " " + it["abstract"]).lower()
+    s = sum(w for pat, w in FUND_POS if re.search(pat, text))
+    s -= sum(w for pat, w in FUND_NEG if re.search(pat, text))
+    if it.get("f"):
+        s += 6
+    if it["review"]:
+        s += 1
+    s += 1.0 * math.log1p(it["cited"])
+    s += 1.0 * jitter("f" + it["id"])
+    return round(s, 2)
+
+
 def vote_bias():
     """data/votes.json is written by the app: {id: {v: 1|-1, d, issn, t}}"""
     votes = load(os.path.join(DATA, "votes.json"), {})
@@ -280,7 +318,7 @@ def daily(today, cfg):
     lo = (today - dt.timedelta(days=WINDOW_BACK)).isoformat()
     hi = (today + dt.timedelta(days=WINDOW_FWD)).isoformat()
 
-    pool, n_raw = [], 0
+    everything, n_raw = {}, 0          # all research items in the window
     for j in journals:
         sid = (sources.get(j["issn"]) or {}).get("id")
         if not sid:
@@ -294,18 +332,30 @@ def daily(today, cfg):
         for w in (res or {}).get("results", []):
             n_raw += 1
             it = to_item(w, j)
-            if it["id"] in seen or not is_research(it):
+            if not is_research(it):
                 continue
             it["score"] = score(it, bias)
-            pool.append(it)
+            it["fs"] = fund_score(it)
+            if it["id"] not in everything or everything[it["id"]]["score"] < it["score"]:
+                everything[it["id"]] = it
 
-    # dedupe (a paper can be listed under two sources)
-    uniq = {}
-    for it in pool:
-        if it["id"] not in uniq or uniq[it["id"]]["score"] < it["score"]:
-            uniq[it["id"]] = it
-    pool = sorted(uniq.values(), key=lambda x: -x["score"])
-    print(f"  {n_raw} raw works, {len(pool)} new research items")
+    pool = sorted((it for it in everything.values() if it["id"] not in seen), key=lambda x: -x["score"])
+    print(f"  {n_raw} raw works, {len(everything)} research items, {len(pool)} not yet shown")
+
+    fundamentals = pick_diverse(sorted((it for it in everything.values() if it["fs"] >= 8),
+                                       key=lambda x: -x["fs"]), 25, per_journal=4, per_domain=5)
+    update_domain_index(today, everything)
+
+    day_path = os.path.join(DATA, "days", f"{today.isoformat()}.json")
+    existing = load(day_path, None)
+    if existing and existing.get("picks") and not FORCE["on"]:
+        # same-day rerun: keep the picks (commentary refers to them), refresh the extras
+        existing["fundamentals"] = fundamentals
+        existing.setdefault("stats", {})["calls_rerun"] = CALLS["n"]
+        save(day_path, existing)
+        save(os.path.join(DATA, "latest.json"), existing)
+        print(f"  kept today's picks; refreshed {len(fundamentals)} fundamentals and the domain index")
+        return
 
     # wildcard: best paper from the domain least represented in recent picks
     recent = {}
@@ -348,9 +398,9 @@ def daily(today, cfg):
         "picks": picks,
         "more": more,
         "shortlist": [by_id[i] for i in shortlist_ids if i in by_id],
+        "fundamentals": fundamentals,
     }
 
-    day_path = os.path.join(DATA, "days", f"{today.isoformat()}.json")
     save(day_path, out)
     save(os.path.join(DATA, "latest.json"), out)
 
@@ -367,6 +417,39 @@ def daily(today, cfg):
     save(os.path.join(DATA, "seen.json"), seen)
     print(f"  wrote {len(picks)} picks, {len(more)} more, {len(out['shortlist'])} shortlist "
           f"({CALLS['n']} API calls)")
+
+
+FORCE = {"on": False}
+DOMAIN_DAYS = 14
+DOMAIN_PER_DAY = 15
+DOMAIN_CAP = 45
+
+
+def update_domain_index(today, everything):
+    """data/domains.json: per domain, the best recent papers over the last
+    14 days, drawn from everything scanned (not just what made the feed)."""
+    path = os.path.join(DATA, "domains.json")
+    idx = load(path, {"updated": None, "domains": {}})
+    cutoff = (today - dt.timedelta(days=DOMAIN_DAYS)).isoformat()
+    by_dom = {}
+    for it in sorted(everything.values(), key=lambda x: -x["score"]):
+        by_dom.setdefault(it["d"], [])
+        if len(by_dom[it["d"]]) < DOMAIN_PER_DAY:
+            slim = {k: v for k, v in it.items() if k not in ("score",)}
+            slim["abstract"] = clip(slim["abstract"], 900)
+            slim["seen_on"] = today.isoformat()
+            slim["rank"] = it["score"]
+            by_dom[it["d"]].append(slim)
+    for d, new in by_dom.items():
+        old = [x for x in idx["domains"].get(d, []) if x.get("seen_on", "") >= cutoff]
+        ids = {x["id"] for x in new}
+        merged = new + [x for x in old if x["id"] not in ids]
+        merged.sort(key=lambda x: (x.get("seen_on", ""), x.get("rank", 0)), reverse=True)
+        idx["domains"][d] = merged[:DOMAIN_CAP]
+    for d in list(idx["domains"]):
+        idx["domains"][d] = [x for x in idx["domains"][d] if x.get("seen_on", "") >= cutoff]
+    idx["updated"] = today.isoformat()
+    save(path, idx)
 
 
 # ---------------------------------------------------------------- retro -----
@@ -429,7 +512,9 @@ def main():
     ap.add_argument("--date", help="YYYY-MM-DD (default: today UTC)")
     ap.add_argument("--retro", choices=["monthly", "quarterly", "auto", "none"], default="auto")
     ap.add_argument("--skip-daily", action="store_true")
+    ap.add_argument("--force", action="store_true", help="re-pick today even if today's file exists")
     a = ap.parse_args()
+    FORCE["on"] = a.force
 
     today = dt.date.fromisoformat(a.date) if a.date else dt.datetime.now(dt.timezone.utc).date()
     cfg = load(os.path.join(ROOT, "journals.json"), None)
