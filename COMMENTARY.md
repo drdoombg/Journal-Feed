@@ -53,27 +53,37 @@ new, or a better number) does not count, however good. Choosing zero on a
 thin day is correct.
 
 For each chosen paper, write a note in the form
-`Shifts: <the assumption or framing before> → <what it is now>. <one sentence on why that matters upstream>.`
+`Shifts: <the assumption or framing before> → <what it is now>. <one sentence on what this changes at the foundation>.`
 Keep it to 25–50 words.
 
-## Upstream card (third job)
+## Foundation card (third job)
 
-Take today's picks (and fundamentals, if useful) and climb upstream: what is
-the deeper principle that two or more of them are instances of? Write it so it
-would change how the reader thinks about all of them, and beyond.
+Take today's picks (and fundamentals, if useful) and work down to the
+foundation: what deeper principle are two or more of them instances of? Write
+it so it would change how the reader thinks about all of them, and beyond.
 
 - `title`: the principle in at most 8 words.
-- `principle`: 80–150 words. State the principle, show how each paper in the
-  chain is a case of it, and say where else it applies.
-- `chain`: 2–4 paper ids from today's file that you climbed from.
-- `foundations`: 1–3 canonical earlier works the principle rests on, written as
+- `principle`: 80–150 words. State the principle, show how each paper it was
+  built from is a case of it, and say where else it applies.
+- `built_from`: 2–4 paper ids from today's file that are instances of it.
+- `rests_on`: 1–3 canonical earlier works the principle rests on, written as
   `Author (Year). Title`. **Only works you are certain exist**: landmark
   papers or books, not obscure ones. Never invent a reference. The app turns
   each into a Google Scholar search, so no URLs.
 - `question`: one open question at the frontier of this principle.
 
-If no honest upstream connection exists today, set `upstream` to null rather
-than forcing one.
+If no honest connection exists today, set `foundation` to null rather than
+forcing one.
+
+## Consolidation and figures (for each of the 10 picks)
+
+- `consolidation[id]`: the paper in four short parts, each at most 25 words:
+  `question` (what they asked), `approach` (how), `finding` (the result, with
+  numbers where the abstract gives them), `implication` (what it changes).
+  Work only from the title, abstract and figure caption.
+- `figure_notes[id]`: only for picks that have a `fig` object. 30–60 words
+  walking the reader through what the figure shows and how to read it, based
+  on its caption. This is the paper explained through its key visual.
 
 ## Output schema
 
@@ -88,15 +98,19 @@ than forcing one.
   "taste": "One line on how votes tilted today's picks, or null.",
   "fundamentals": {
     "order": ["0 to 5 ids from the fundamentals list"],
-    "notes": {"W789": "Shifts: ... → .... Why it matters upstream."}
+    "notes": {"W789": "Shifts: ... → .... What it changes at the foundation."}
   },
-  "upstream": {
+  "foundation": {
     "title": "...",
     "principle": "...",
-    "chain": ["W123", "W456"],
-    "foundations": ["Author (Year). Title"],
+    "built_from": ["W123", "W456"],
+    "rests_on": ["Author (Year). Title"],
     "question": "..."
-  }
+  },
+  "consolidation": {
+    "W123": {"question": "...", "approach": "...", "finding": "...", "implication": "..."}
+  },
+  "figure_notes": {"W123": "How to read the key figure."}
 }
 ```
 
@@ -114,5 +128,6 @@ than forcing one.
 - `order` has exactly 10 ids, all present in `shortlist`, no duplicates.
 - Every id in `order` has a note.
 - `fundamentals.order` has 0–5 ids, all present in the `fundamentals` list, each with a note.
-- `upstream` is null, or its `chain` ids all appear in today's file.
+- `foundation` is null, or its `built_from` ids all appear in today's file.
+- Every id in `order` has a `consolidation`; `figure_notes` only for picks with `fig`.
 - The file parses as JSON.

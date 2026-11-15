@@ -42,20 +42,83 @@
    "W7154510137": "Shifts: the universal anomalous scaling seen in QCD power corrections was an empirical regularity → traced to its operator origin in quantum field theory via light-ray operators. A pattern gets a mechanism, which is what turns a fit into physics."
   }
  },
- "upstream": {
+ "foundation": {
   "title": "Microscopic detail washes out into few variables",
   "principle": "Several of today's papers turn out to be the same claim: complex systems are governed by far fewer effective variables than their parts suggest. A dilute Fermi gas's energy depends on the interaction only through one number, the scattering length. A decade of blood evolution before leukaemia follows a few simple rules of mutation timing and fitness. Microbial communities with countless interactions trace low-dimensional paths. A dryland ecosystem's collapse is a phase transition set by local trade-offs. This compression is why science works at all, why a few observables can predict and control a system. The live question is where it fails.",
-  "chain": [
+  "built_from": [
    "W4416048293",
    "W4400490766",
    "W4411476832",
    "W7225771350"
   ],
-  "foundations": [
+  "rests_on": [
    "P. W. Anderson (1972). More Is Different",
    "K. G. Wilson (1971). Renormalization Group and Critical Phenomena",
    "Machta, Chachra, Transtrum, Sethna (2013). Parameter Space Compression Underlies Emergent Theories and Predictive Models"
   ],
   "question": "Can we tell in advance whether a system will compress to a few variables or stay irreducibly high-dimensional? A rare leukaemia driver or a single tipping event may be exactly where the compression breaks."
- }
+ },
+ "consolidation": {
+  "W4400490766": {
+   "question": "What evolutionary rules govern the years of pre-cancerous change before acute myeloid leukaemia?",
+   "approach": "Deep duplex sequencing of annual blood samples taken up to 15 years before diagnosis, interpreted with evolutionary theory.",
+   "finding": "First drivers arise decades early and grow slowly. Later drivers give up to 100-fold larger advantages and can sweep the blood.",
+   "implication": "Pre-leukaemic evolution is quantifiable, follows simple rules, and leaves signals years before diagnosis."
+  },
+  "W2805780137": {
+   "question": "Why do people keep mistaken beliefs despite high stakes, abundant data and repeated chances to learn?",
+   "approach": "A formal model where attention is channelled through a person's possibly misspecified model of the world.",
+   "finding": "Some wrong models are 'attentionally stable': the data a person attends to never reveals the error.",
+   "implication": "Persistent error can come from what we notice, not irrational reasoning. This reframes learning failures in people and institutions."
+  },
+  "W4400480772": {
+   "question": "Can the viscosity of electron fluids in 2D materials be measured quantitatively?",
+   "approach": "Magnetoresistance in Corbino-shaped graphene devices, used as a combined ohmmeter and viscometer.",
+   "finding": "In monolayer and bilayer graphene, electron scattering scales linearly with temperature, not the T² Fermi-liquid theory predicts.",
+   "implication": "Supports a predicted 'tomographic' fluid regime that may be generic to two-dimensional electron systems."
+  },
+  "W7225127387": {
+   "question": "Does early TAVR beat surveillance in moderate aortic stenosis with at-risk features?",
+   "approach": "International open-label randomised trial: transfemoral TAVR vs clinical surveillance, 1:1, death or heart-failure event at 2 years.",
+   "finding": "Primary endpoint 16.7% vs 23.9% (difference −7.2 points, 95% CI −13.1 to −1.3). All-cause death 8.4% vs 7.3%.",
+   "implication": "May move intervention earlier in aortic stenosis, though mortality was not reduced."
+  },
+  "W4286895426": {
+   "question": "How irregular can the singular set of an area-minimising submanifold be?",
+   "approach": "Explicit construction of area-minimising submanifolds on compact Riemannian manifolds.",
+   "finding": "Singular sets can be fractal, with any prescribed Almgren stratification. The result is sharp in dimension.",
+   "implication": "Settles Almgren's conjecture and marks the limits of regularity theory for minimal surfaces."
+  },
+  "W7125966085": {
+   "question": "Do Type Ia supernovae form one standardisable population, or several?",
+   "approach": "The updated UNITY1.8 Bayesian model applied to the Union3.1 compilation, allowing two populations.",
+   "finding": "The two populations differ in light-curve shape, colour and standardisation. The host-mass step vanishes for unreddened supernovae, and uncertainties shrink.",
+   "implication": "Supernova cosmology, central to the dark-energy debate, needs standardisation that accounts for both populations."
+  },
+  "W4399758823": {
+   "question": "How should gradients be computed through models built on differential equations?",
+   "approach": "A review of differentiable programming for differential equations, spanning inverse methods and machine learning.",
+   "finding": "Sets out the methods and trade-offs for sensitivity analysis, parameter inversion and hybrid physics–ML models.",
+   "implication": "Gives simulation, inverse problems and machine learning one shared mathematical toolkit."
+  },
+  "W7161720390": {
+   "question": "What sets where a Schwarzschild black hole's quasinormal-mode expansion converges?",
+   "approach": "Analytic study of the singularities of the retarded Green's function in complex time.",
+   "finding": "Convergence is bounded by a 'bouncing singularity' from a light ray reflecting off the black-hole singularity.",
+   "implication": "The black hole's interior geometry limits what ringdown expansions seen from outside can describe."
+  },
+  "W4390843425": {
+   "question": "How is climate risk mispriced through property insurance and mortgages?",
+   "approach": "Natural experiments on a new Florida dataset linking mortgages and insurers, 2009–2018.",
+   "finding": "Fragile insurers' insolvency causally raises post-disaster defaults. Mortgage-agency practices put ~25% of their expected Florida losses on insurer fragility.",
+   "implication": "Hidden insurer weakness passes climate risk to taxpayers. Screening insurance quality would change who gets credit."
+  },
+  "W4417398541": {
+   "question": "What is a unified cross-species taxonomy of basal ganglia cell types?",
+   "approach": "Multiomic consensus atlas of 1.8 million nuclei from humans, macaques and marmosets across eight structures.",
+   "finding": "61 homologous cell types conserved over 76 million years. Dorsal-ventral identity is more conserved than the D1/D2 split.",
+   "implication": "A reference map for basal ganglia evolution and disease, pinning psychiatric risk to specific cell types."
+  }
+ },
+ "figure_notes": {}
 }

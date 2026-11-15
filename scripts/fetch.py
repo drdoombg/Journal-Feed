@@ -46,7 +46,7 @@ SEEN_DAYS = 120
 SELECT = ",".join([
     "id", "doi", "title", "publication_date", "type", "cited_by_count",
     "abstract_inverted_index", "authorships", "open_access", "primary_topic",
-    "primary_location", "best_oa_location",
+    "primary_location", "best_oa_location", "ids",
 ])
 
 JUNK = re.compile(
@@ -203,6 +203,8 @@ def to_item(w, j):
         "abstract": clip(abstract_from_index(w.get("abstract_inverted_index")), 1800),
         "oa": bool(oa.get("is_oa")),
         "oa_url": best.get("pdf_url") or best.get("landing_page_url") or oa.get("oa_url") or "",
+        "license": (best.get("license") or "").lower(),
+        "pmcid": short_id((w.get("ids") or {}).get("pmcid") or ""),
         "topic": topic or "",
     }
 
@@ -351,6 +353,7 @@ def daily(today, cfg):
     if existing and existing.get("picks") and not FORCE["on"]:
         # same-day rerun: keep the picks (commentary refers to them), refresh the extras
         existing["fundamentals"] = fundamentals
+        attach_figures(existing["picks"] + existing.get("more", []) + existing.get("shortlist", []) + fundamentals)
         existing.setdefault("stats", {})["calls_rerun"] = CALLS["n"]
         save(day_path, existing)
         save(os.path.join(DATA, "latest.json"), existing)
@@ -391,6 +394,7 @@ def daily(today, cfg):
             shortlist_ids.append(it["id"])
 
     by_id = {it["id"]: it for it in pool}
+    attach_figures(picks + more + [by_id[i] for i in shortlist_ids if i in by_id] + fundamentals)
     out = {
         "date": today.isoformat(),
         "generated": dt.datetime.now(dt.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -417,6 +421,105 @@ def daily(today, cfg):
     save(os.path.join(DATA, "seen.json"), seen)
     print(f"  wrote {len(picks)} picks, {len(more)} more, {len(out['shortlist'])} shortlist "
           f"({CALLS['n']} API calls)")
+
+
+# ------------------------------------------------------------- figures ------
+# Key figure per paper, only where the licence allows reuse (Creative Commons
+# or public domain) and Europe PMC holds the open full text. Paywalled figures
+# are copyrighted, so those papers get no image.
+
+EPMC = "https://www.ebi.ac.uk/europepmc/webservices/rest"
+REUSABLE = re.compile(r"^(cc[- ]?by|cc0|public[- ]domain|pd)", re.I)
+FIG_CACHE = {}
+
+
+def http_get(url, accept=None, max_bytes=None):
+    req = urllib.request.Request(url, headers={"User-Agent": "journal-feed/1.0 (github.com/drdoombg/Journal-Feed)",
+                                               **({"Accept": accept} if accept else {})})
+    try:
+        with urllib.request.urlopen(req, timeout=30) as r:
+            body = r.read(max_bytes) if max_bytes else r.read()
+            return r.status, r.headers.get("Content-Type", ""), body
+    except Exception:
+        return None, "", b""
+    finally:
+        time.sleep(0.15)
+
+
+def find_pmcid(it):
+    if it.get("pmcid"):
+        return it["pmcid"] if it["pmcid"].upper().startswith("PMC") else "PMC" + it["pmcid"]
+    if not it.get("doi"):
+        return ""
+    q = urllib.parse.quote(f'DOI:"{it["doi"]}"')
+    st, _, body = http_get(f"{EPMC}/search?query={q}&format=json&resultType=lite&pageSize=1")
+    if st != 200:
+        return ""
+    try:
+        res = json.loads(body.decode("utf-8")).get("resultList", {}).get("result", [])
+        return res[0].get("pmcid", "") if res else ""
+    except Exception:
+        return ""
+
+
+def key_figure(pmcid):
+    """Graphical abstract if the paper has one, otherwise Figure 1."""
+    import xml.etree.ElementTree as ET
+    st, _, body = http_get(f"{EPMC}/{pmcid}/fullTextXML")
+    if st != 200 or not body:
+        return None
+    try:
+        root = ET.fromstring(body)
+    except ET.ParseError:
+        return None
+    XL = "{http://www.w3.org/1999/xlink}href"
+    figs = root.iter("fig")
+    cands = []
+    for f in figs:
+        g = f.find(".//graphic")
+        if g is None or not g.get(XL):
+            continue
+        label = " ".join((f.findtext("label") or "").split())
+        cap = f.find("caption")
+        caption = " ".join("".join(cap.itertext()).split()) if cap is not None else ""
+        fid = (f.get("id") or "").lower()
+        ga = "abs" in fid or "ga" == fid[:2] or "graphical" in caption.lower()[:40]
+        cands.append({"href": g.get(XL), "label": label or "Figure", "caption": caption, "ga": ga})
+    if not cands:
+        return None
+    pick = next((c for c in cands if c["ga"]), cands[0])
+    href = pick["href"]
+    name = href if re.search(r"\.(jpe?g|png|gif)$", href, re.I) else href + ".jpg"
+    src = f"https://europepmc.org/articles/{pmcid}/bin/{name}"
+    st, ctype, _ = http_get(src, max_bytes=64)
+    if st != 200 or not ctype.startswith("image"):
+        return None
+    return {"src": src, "label": pick["label"], "caption": clip(pick["caption"], 700), "ga": pick["ga"]}
+
+
+def attach_figures(items):
+    n_try = n_ok = 0
+    for it in items:
+        if "fig" in it:
+            continue
+        if not (it.get("oa") and REUSABLE.match(it.get("license") or "")):
+            continue
+        if it["id"] in FIG_CACHE:
+            fig = FIG_CACHE[it["id"]]
+        else:
+            n_try += 1
+            pmcid = find_pmcid(it)
+            fig = key_figure(pmcid) if pmcid else None
+            if fig:
+                lic = it["license"].upper().replace("CC-", "CC ").replace("-", " ")
+                first = (it.get("authors") or ["Authors"])[0]
+                fig["credit"] = f"{first}{' et al.' if it.get('n_auth', 1) > 1 else ''}, {it['journal']} ({lic})"
+                fig["pmcid"] = pmcid
+            FIG_CACHE[it["id"]] = fig
+        if fig:
+            it["fig"] = fig
+            n_ok += 1
+    print(f"  figures: {n_ok} attached ({n_try} open-licence papers checked)")
 
 
 FORCE = {"on": False}

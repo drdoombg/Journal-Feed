@@ -1,5 +1,5 @@
 // Shell cached for instant open; data is network-first so the feed is always fresh.
-const CACHE = "jf-shell-v2";
+const CACHE = "jf-shell-v3";
 const SHELL = ["./", "index.html", "style.css", "app.js", "journals.json", "manifest.json", "icon.svg"];
 
 self.addEventListener("install", e => {

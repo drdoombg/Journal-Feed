@@ -49,43 +49,55 @@ const JUNK = /^(correction|corrigendum|erratum|retraction|editorial|in this issu
 
 /* --------------------------------------------------------------- card -- */
 function card(it, opt = {}) {
-  const col = CFG.domains[it.d] || "#aaa";
+  const col = CFG.domains[it.d] || "#888";
   const v = votes[it.id]?.v || 0;
   const isSaved = !!saved[it.id];
   const authors = it.authors?.length ? esc(it.authors.join(", ")) + (it.n_auth > it.authors.length ? " et al." : "") : "";
-  const badges = [
-    it.wildcard ? `<span class="badge wild">WILDCARD</span>` : "",
-    it.classic ? `<span class="badge classic">CLASSIC</span>` : "",
-    it.review ? `<span class="badge review">REVIEW</span>` : "",
-    it.oa ? `<span class="badge oa">OPEN</span>` : "",
-    it.was_picked ? `<span class="badge hit">YOU SAW IT</span>` : "",
+  const kind = it.review ? "Review" : "Article";
+  const tags = [
+    it.wildcard ? `<span class="tag wild">Wildcard</span>` : "",
+    it.classic ? `<span class="tag">Classic</span>` : "",
+    it.oa ? `<span class="tag oa">Open access</span>` : "",
+    it.was_picked ? `<span class="tag oa">In your feed</span>` : "",
   ].join("");
-  const cited = it.cited ? `<span>${it.cited.toLocaleString()} cites</span>` : "";
+  const c = it.cons;
+  const fig = it.fig;
   const el = document.createElement("article");
   el.className = "card" + (opt.compact ? " compact" : "") + (opt.open ? " open" : "");
   el.dataset.id = it.id;
   el.innerHTML = `
     <div class="meta">
-      <span class="chip" style="color:${col};border-color:${col}55">${esc(it.d)}</span>
-      <span>${esc(it.journal)}</span><span>${fmtDate(it.date)}</span>${cited}${badges}
+      <span class="dom" style="--c:${col}"><i></i>${esc(it.d)}</span>
+      <span class="jn">${esc(it.journal)}</span>
+      <span>${kind}</span>
+      <span>${fmtDate(it.date)}</span>
+      ${it.cited ? `<span>${it.cited.toLocaleString()} citations</span>` : ""}
+      ${tags}
     </div>
     <h2><a href="${esc(it.url)}" target="_blank" rel="noopener">${esc(it.title)}</a></h2>
     ${authors ? `<div class="authors">${authors}</div>` : ""}
-    ${it.note ? `<div class="note">${esc(it.note)}</div>` : ""}
+    ${fig ? `<figure><div class="img"><img loading="lazy" src="${esc(fig.src)}" alt="${esc(fig.label)} from the paper"></div>
+      <figcaption><b>${esc(fig.label)}</b>${fig.caption ? " | " + esc(fig.caption) : ""}<span class="credit">${esc(fig.credit || "")} · via Europe PMC</span></figcaption></figure>
+      ${it.fignote ? `<div class="block"><div class="h">Reading the figure</div><div class="fignote">${esc(it.fignote)}</div></div>` : ""}` : ""}
+    ${it.note ? `<div class="block"><div class="h">${opt.noteLabel || "Why it matters"}</div><div class="note">${esc(it.note)}</div></div>` : ""}
+    ${c ? `<dl class="cons"><dt>Question</dt><dd>${esc(c.question)}</dd><dt>Approach</dt><dd>${esc(c.approach)}</dd>
+      <dt>Finding</dt><dd>${esc(c.finding)}</dd><dt>Implication</dt><dd>${esc(c.implication)}</dd></dl>` : ""}
     ${it.abstract ? `<div class="abs">${esc(it.abstract)}</div>` : ""}
     <div class="actions">
-      ${it.abstract ? `<button data-a="abs">Abstract ▾</button>` : `<span style="padding:7px 9px;color:var(--dimmer);font-size:12.5px">no abstract</span>`}
+      ${it.abstract ? `<button data-a="abs">Abstract</button>` : `<span class="na">No abstract</span>`}
+      ${it.oa_url ? `<a href="${esc(it.oa_url)}" target="_blank" rel="noopener">Full text</a>` : ""}
+      <button data-a="log" title="Copy for the knowledge map">Log</button>
       <span class="sp"></span>
-      <button data-a="up" class="${v > 0 ? "on-up" : ""}" title="More like this">👍</button>
-      <button data-a="down" class="${v < 0 ? "on-down" : ""}" title="Less like this">👎</button>
-      <button data-a="save" class="${isSaved ? "on-save" : ""}" title="Save">${isSaved ? "★" : "☆"}</button>
-      <button data-a="log" title="Copy for knowledge map">Log</button>
-      ${it.oa_url ? `<a href="${esc(it.oa_url)}" target="_blank" rel="noopener" title="Open-access copy">PDF</a>` : ""}
+      <button data-a="up" class="${v > 0 ? "on-up" : ""}" title="More like this">▲</button>
+      <button data-a="down" class="${v < 0 ? "on-down" : ""}" title="Less like this">▼</button>
+      <button data-a="save" class="${isSaved ? "on-save" : ""}" title="Save">${isSaved ? "Saved" : "Save"}</button>
     </div>`;
+  const img = el.querySelector("figure img");
+  if (img) img.onerror = () => img.closest("figure").remove();
   el.addEventListener("click", e => {
     const b = e.target.closest("[data-a]"); if (!b) return;
     const a = b.dataset.a;
-    if (a === "abs") { el.classList.toggle("open"); b.textContent = el.classList.contains("open") ? "Abstract ▴" : "Abstract ▾"; }
+    if (a === "abs") { el.classList.toggle("open"); b.textContent = el.classList.contains("open") ? "Hide abstract" : "Abstract"; }
     if (a === "up" || a === "down") vote(it, a === "up" ? 1 : -1, el);
     if (a === "save") toggleSave(it, b);
     if (a === "log") logToMap(it);
@@ -108,8 +120,8 @@ function vote(it, val, el) {
   scheduleSync();
 }
 function toggleSave(it, b) {
-  if (saved[it.id]) { delete saved[it.id]; b.textContent = "☆"; b.className = ""; toast("Removed from saved"); }
-  else { saved[it.id] = { ...it, savedAt: today() }; b.textContent = "★"; b.className = "on-save"; toast("Saved"); }
+  if (saved[it.id]) { delete saved[it.id]; b.textContent = "Save"; b.className = ""; toast("Removed from saved"); }
+  else { saved[it.id] = { ...it, savedAt: today() }; b.textContent = "Saved"; b.className = "on-save"; toast("Saved"); }
   store.set("saved", saved);
 }
 async function logToMap(it) {
@@ -167,7 +179,8 @@ async function loadDay(date) {
       const ordered = com.order.map(id => byId[id]).filter(Boolean);
       if (ordered.length >= 5) picks = ordered;
     }
-    picks = picks.map(it => ({ ...it, note: com.notes?.[it.id] || it.note }));
+    picks = picks.map(it => ({ ...it, note: com.notes?.[it.id] || it.note,
+      cons: com.consolidation?.[it.id], fignote: com.figure_notes?.[it.id] }));
   }
   const pickIds = new Set(picks.map(p => p.id));
   const more = [...day.picks, ...(day.more || [])].filter(it => !pickIds.has(it.id));
@@ -189,7 +202,7 @@ async function renderToday(date) {
   main.innerHTML = "";
   if (com?.thread) {
     const t = document.createElement("div"); t.className = "thread";
-    t.innerHTML = `<h3>Today's thread</h3><p>${esc(com.thread)}</p>`; main.append(t);
+    t.innerHTML = `<h3>Editor's note · today's thread</h3><p>${esc(com.thread)}</p>`; main.append(t);
   }
   main.insertAdjacentHTML("beforeend", `<div class="label">Top picks <span class="n">${picks.length}</span></div>`);
   picks.forEach(it => main.append(card(it)));
@@ -290,21 +303,23 @@ async function renderFund() {
   if (day) { try { com = await getJSON(`data/commentary/${day.date}.json`, { cache: "no-store" }); } catch {} }
   main.innerHTML = "";
 
-  const up = com?.upstream;
-  if (up?.principle) {
+  // "foundation" (current schema); "upstream" kept for older files
+  const fd = com?.foundation || (com?.upstream && { ...com.upstream, built_from: com.upstream.chain, rests_on: com.upstream.foundations });
+  if (fd?.principle) {
     const byId = {};
     for (const it of [...(day.shortlist || []), ...day.picks, ...(day.more || []), ...(day.fundamentals || [])]) byId[it.id] = it;
-    const chain = (up.chain || []).map(id => byId[id]).filter(Boolean);
-    const el = document.createElement("div"); el.className = "upstream";
+    const built = (fd.built_from || []).map(id => byId[id]).filter(Boolean);
+    const el = document.createElement("section"); el.className = "foundation";
     el.innerHTML = `
-      <h3>Upstream · ${esc(up.title || "today's principle")}</h3>
-      <p>${esc(up.principle)}</p>
-      ${chain.length ? `<div class="up-sub">Climbed from</div><ul>${chain.map(c => `<li><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a> <span>${esc(c.journal)}</span></li>`).join("")}</ul>` : ""}
-      ${up.foundations?.length ? `<div class="up-sub">The foundations underneath</div><ul>${up.foundations.map(f => `<li><a href="${scholar(f)}" target="_blank" rel="noopener">${esc(f)}</a></li>`).join("")}</ul>` : ""}
-      ${up.question ? `<div class="up-q"><b>Open question:</b> ${esc(up.question)}</div>` : ""}`;
+      <div class="kicker">Foundation · ${fmtDate(day.date)}</div>
+      <h2>${esc(fd.title || "Today's principle")}</h2>
+      <p>${esc(fd.principle)}</p>
+      ${built.length ? `<div class="sub2">Built from today's papers</div><ol>${built.map(c => `<li><a href="${esc(c.url)}" target="_blank" rel="noopener">${esc(c.title)}</a> <span>${esc(c.journal)}</span></li>`).join("")}</ol>` : ""}
+      ${fd.rests_on?.length ? `<div class="sub2">Rests on</div><ul>${fd.rests_on.map(f => `<li><a href="${scholar(f)}" target="_blank" rel="noopener">${esc(f)}</a></li>`).join("")}</ul>` : ""}
+      ${fd.question ? `<div class="q"><b>Open question</b>${esc(fd.question)}</div>` : ""}`;
     main.append(el);
   } else {
-    main.insertAdjacentHTML("beforeend", `<div class="upstream"><h3>Upstream</h3><p style="color:var(--dim)">Today's upstream card hasn't been written yet. Claude writes it each morning along with the commentary.</p></div>`);
+    main.insertAdjacentHTML("beforeend", `<section class="foundation"><div class="kicker">Foundation</div><p style="color:var(--dim)">Today's foundation hasn't been written yet. Claude writes it each morning with the commentary.</p></section>`);
   }
 
   const cands = day?.fundamentals || [];
@@ -313,7 +328,7 @@ async function renderFund() {
   const chosen = fOrder.length ? fOrder.map(id => cands.find(c => c.id === id)) : [];
   if (chosen.length) {
     main.insertAdjacentHTML("beforeend", `<div class="label">Shifts in the foundations <span class="n">${chosen.length}</span></div>`);
-    chosen.forEach(it => main.append(card({ ...it, note: fnotes[it.id] })));
+    chosen.forEach(it => main.append(card({ ...it, note: fnotes[it.id] }, { noteLabel: "What it shifts" })));
   }
   const rest = cands.filter(c => !fOrder.includes(c.id));
   if (rest.length) {
