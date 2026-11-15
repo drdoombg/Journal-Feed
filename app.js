@@ -95,7 +95,10 @@ function card(it, opt = {}) {
       <button data-a="save" class="${isSaved ? "on-save" : ""}" title="Save">${isSaved ? "Saved" : "Save"}</button>
     </div>`;
   const img = el.querySelector("figure img");
-  if (img) img.onerror = () => img.closest("figure").remove();
+  if (img) {
+    img.onerror = () => img.closest("figure").remove();
+    img.addEventListener("click", () => openViewer(fig, it));
+  }
   el.addEventListener("click", e => {
     const b = e.target.closest("[data-a]"); if (!b) return;
     const a = b.dataset.a;
@@ -107,6 +110,74 @@ function card(it, opt = {}) {
   views[it.d] = (views[it.d] || 0) + 1;
   shownIds.add(it.id);
   return el;
+}
+
+/* ----------------------------------------------------- figure viewer --- */
+/* Click a figure: full-screen view. Wheel or pinch to zoom, drag to pan,
+   double-click to toggle 2.5x, click outside the image or Esc to close. */
+function openViewer(fig, it) {
+  const ov = document.createElement("div");
+  ov.className = "viewer";
+  ov.innerHTML = `
+    <div class="v-stage"><img class="v-img" src="${esc(fig.src)}" alt="${esc(fig.label)}" draggable="false"></div>
+    <div class="v-bar">
+      <div class="v-cap"><b>${esc(fig.label)}</b>${fig.caption ? " | " + esc(fig.caption) : ""}
+        <span class="credit">${esc(it.title)} · ${esc(fig.credit || "")}</span></div>
+      <div class="v-ctl"><button data-z="-">−</button><span class="v-pct">100%</span><button data-z="+">+</button><button data-z="0">Fit</button><button data-z="x" title="Close (Esc)">✕</button></div>
+    </div>`;
+  document.body.append(ov);
+  document.body.style.overflow = "hidden";
+  const stage = ov.querySelector(".v-stage"), im = ov.querySelector(".v-img"), pct = ov.querySelector(".v-pct");
+  let s = 1, x = 0, y = 0;
+  const apply = () => { im.style.transform = `translate(${x}px,${y}px) scale(${s})`; pct.textContent = Math.round(s * 100) + "%"; im.style.cursor = s > 1 ? "grab" : "zoom-in"; };
+  const zoomAt = (ns, cx, cy) => {               // keep the point under the cursor fixed
+    ns = Math.min(8, Math.max(1, ns));
+    const r = stage.getBoundingClientRect(), ox = cx - r.left - r.width / 2, oy = cy - r.top - r.height / 2;
+    x = ox - (ox - x) * (ns / s); y = oy - (oy - y) * (ns / s); s = ns;
+    if (s === 1) { x = 0; y = 0; }
+    apply();
+  };
+  const close = () => { ov.remove(); document.body.style.overflow = ""; removeEventListener("keydown", onKey); };
+  const onKey = e => { if (e.key === "Escape") close(); if (e.key === "+" || e.key === "=") zoomAt(s * 1.25, innerWidth / 2, innerHeight / 2); if (e.key === "-") zoomAt(s / 1.25, innerWidth / 2, innerHeight / 2); };
+  addEventListener("keydown", onKey);
+
+  stage.addEventListener("wheel", e => { e.preventDefault(); zoomAt(s * Math.exp(-e.deltaY * 0.0015), e.clientX, e.clientY); }, { passive: false });
+  im.addEventListener("dblclick", e => zoomAt(s > 1 ? 1 : 2.5, e.clientX, e.clientY));
+
+  // drag to pan (mouse + one finger), pinch to zoom (two fingers)
+  const pts = new Map(); let moved = false, start = null, pinch = null;
+  im.addEventListener("pointerdown", e => {
+    e.preventDefault(); im.setPointerCapture(e.pointerId); pts.set(e.pointerId, e); moved = false;
+    if (pts.size === 1) start = { px: e.clientX, py: e.clientY, x, y };
+    if (pts.size === 2) { const [a, b] = [...pts.values()]; pinch = { d: Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY), s }; }
+    if (s > 1) im.style.cursor = "grabbing";
+  });
+  im.addEventListener("pointermove", e => {
+    if (!pts.has(e.pointerId)) return; pts.set(e.pointerId, e);
+    if (pts.size === 2 && pinch) {
+      const [a, b] = [...pts.values()];
+      zoomAt(pinch.s * Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY) / pinch.d, (a.clientX + b.clientX) / 2, (a.clientY + b.clientY) / 2);
+      moved = true;
+    } else if (start) {
+      const dx = e.clientX - start.px, dy = e.clientY - start.py;
+      if (Math.abs(dx) + Math.abs(dy) > 3) moved = true;
+      if (s > 1) { x = start.x + dx; y = start.y + dy; apply(); }
+    }
+  });
+  const up = e => { pts.delete(e.pointerId); if (pts.size < 2) pinch = null; if (!pts.size) { start = null; apply(); } };
+  im.addEventListener("pointerup", up); im.addEventListener("pointercancel", up);
+  im.addEventListener("click", e => { e.stopPropagation(); if (!moved && s === 1) zoomAt(2.5, e.clientX, e.clientY); });
+
+  ov.querySelector(".v-ctl").addEventListener("click", e => {
+    e.stopPropagation();
+    const z = e.target.closest("[data-z]")?.dataset.z; if (!z) return;
+    if (z === "x") return close();
+    if (z === "0") { s = 1; x = 0; y = 0; apply(); return; }
+    zoomAt(z === "+" ? s * 1.4 : s / 1.4, innerWidth / 2, innerHeight / 2);
+  });
+  ov.querySelector(".v-cap").addEventListener("click", e => e.stopPropagation());
+  ov.addEventListener("click", close);            // anywhere that isn't the image or the controls
+  apply();
 }
 
 function vote(it, val, el) {
