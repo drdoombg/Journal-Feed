@@ -453,5 +453,8 @@ addEventListener("hashchange", route);
     for (const j of CFG.journals) ISSN[j.issn] = j;
   } catch {}
   route();
+  getJSON("data/latest.json", { cache: "no-store" }).then(d => {
+    const s = $("#sub"); if (s.textContent === "loading…") s.textContent = `${fmtDate(d.date)} · ${d.stats?.new ?? "?"} new papers scanned`;
+  }).catch(() => { const s = $("#sub"); if (s.textContent === "loading…") s.textContent = "waiting for the first run"; });
   if ("serviceWorker" in navigator) navigator.serviceWorker.register("sw.js").catch(() => {});
 })();
