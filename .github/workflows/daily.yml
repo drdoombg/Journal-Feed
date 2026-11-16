@@ -2,7 +2,10 @@ name: Daily feed
 
 on:
   schedule:
-    - cron: "50 3 * * *"        # 03:50 UTC daily (GitHub may delay a little); commentary follows at 04:37 London
+    # GitHub sometimes drops scheduled runs, so try three times; later runs skip if today is already done.
+    - cron: "17 2 * * *"
+    - cron: "50 3 * * *"
+    - cron: "13 5 * * *"
   workflow_dispatch:
     inputs:
       retro:
@@ -25,16 +28,26 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Skip if today's feed already exists (scheduled runs only)
+        id: guard
+        run: |
+          if [ "${{ github.event_name }}" = "schedule" ] && [ -f "data/days/$(date -u +%F).json" ]; then
+            echo "skip=1" >> "$GITHUB_OUTPUT"; echo "Today's feed already exists."
+          fi
+
       - uses: actions/setup-python@v5
+        if: steps.guard.outputs.skip != '1'
         with:
           python-version: "3.12"
 
       - name: Fetch and rank today's papers
+        if: steps.guard.outputs.skip != '1'
         env:
           OPENALEX_API_KEY: ${{ secrets.OPENALEX_API_KEY }}
         run: python scripts/fetch.py --retro "${{ github.event.inputs.retro || 'auto' }}"
 
       - name: Commit
+        if: steps.guard.outputs.skip != '1'
         run: |
           git config user.name  "journal-feed-bot"
           git config user.email "journal-feed-bot@users.noreply.github.com"
