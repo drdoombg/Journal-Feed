@@ -3,9 +3,10 @@ name: Daily feed
 on:
   schedule:
     # GitHub sometimes drops scheduled runs, so try three times; later runs skip if today is already done.
-    - cron: "17 2 * * *"
-    - cron: "50 3 * * *"
-    - cron: "13 5 * * *"
+    # Midnight fetch with two backups, all before 02:00 UK time (UTC; 1h later in BST).
+    - cron: "5 0 * * *"
+    - cron: "41 0 * * *"
+    - cron: "23 1 * * *"
   workflow_dispatch:
     inputs:
       retro:
