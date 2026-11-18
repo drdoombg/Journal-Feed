@@ -1,0 +1,123 @@
+{
+  "date": "2026-11-18",
+  "order": [
+    "W7225340455",
+    "W7160602228",
+    "W4414992191",
+    "W4415909975",
+    "W7225450878",
+    "W4412998261",
+    "W7225816748",
+    "W7128118570",
+    "W4407278428",
+    "W7140326565"
+  ],
+  "notes": {
+    "W7225340455": "Precisely dated Asian speleothems show Dansgaard–Oeschger warmings took over a century, not a decade. Greenland ice records the fast atmospheric flip after sea-ice retreat; the AMOC itself recovered slowly. This reframes what 'abrupt' tipping means for modern AMOC risk.",
+    "W7160602228": "A Penrose-style singularity theorem that survives quantum effects: it drops global hyperbolicity and the null energy condition, using the Generalized Second Law instead. Standard evaporating black-hole models are therefore geodesically incomplete. A proof about models, not observations, but it closes a common escape route.",
+    "W4414992191": "Perspective arguing that Fisher information, the quantity that sets measurement precision, flows through optical fields along its own paths, distinct from energy, with interference, vortices, Talbot revivals and super-focusing. Treats metrology as information-flow engineering. Conceptual framing; the payoff still needs experimental demonstration.",
+    "W4415909975": "In evolving Drosophila populations the genotype–phenotype map for pigmentation was stable and correctly predicted the direction of trait change, yet which loci actually responded was largely unpredictable. A clean empirical limit on genomic prediction of adaptation, from one trait in one species.",
+    "W7225450878": "Randomised trial of 4368 patients after ischaemic stroke or TIA in Brazil: systolic target <120 vs <140 mm Hg cut the composite cardiovascular outcome (HR 0.79; 10.9% vs 13.5%). Extends SPRINT-type evidence to secondary stroke prevention. Caveat: more renal decline with intensive treatment, open-label design.",
+    "W4412998261": "Bacteria (notably Alteromonas) amplify virus-induced death in four bloom-forming algae, explaining why blooms crash when under 30% of cells are infected. Introduces synergy and benefit indices for tripartite interactions. Shifts how ocean carbon models partition viral shunt versus export.",
+    "W7225816748": "Tests the 2025 Lancet Commission split between clinical and preclinical obesity in 844,108 adults over four countries. Most preclinical obesity did not progress over 10 years (77–91%); mortality HR was 1.69 for clinical vs 1.19 for preclinical. Observational, but large, multi-cohort and decision-relevant.",
+    "W7128118570": "Natural experiment in Danish registries: after a male manager's first daughter (vs son), women's relative earnings in his firm rise 4.4% and employment 2.9%, via substituting equally qualified female hires, with no hit to firm performance. Attitudes shift fast, not through long exposure.",
+    "W4407278428": "Superb-seq tags Cas9 cut sites with a T7 promoter so each single cell reports both its edits and its transcriptome. In 10,000 K562 cells it found all on-target and 36 off-target sites; 19 off-targets changed gene expression. Improves on Perturb-seq for perturbation effects.",
+    "W7140326565": "Shows non-reciprocal 'vision-cone' coupling in the XY model acts like activity, mapping onto Toner–Tu flocking hydrodynamics; 1D excitations obey a generalised Burgers equation. Non-reciprocity lets winding defects relax to the ground state, impossible at equilibrium. Directly simulable framework for active matter."
+  },
+  "thread": "Two picks find that the visible signal hides a slower or more varied process underneath. Greenland ice shows a decade-scale flip while the ocean took a century; Drosophila traits evolve predictably while the responding genes do not. Fisher-information flow, which departs from energy flow, gives the same lesson for instrument design: ask which part of the system your measurement is actually reading.",
+  "taste": null,
+  "fundamentals": {
+    "order": [
+      "W4416048293",
+      "W4417295272",
+      "W4411476832"
+    ],
+    "notes": {
+      "W4416048293": "Shifts: the Huang–Yang 1957 energy expansion for dilute repulsive fermions was a trusted physicist's prediction → it is now a theorem with matching upper and lower bounds. Universality via scattering length alone is now proven, not assumed, for this many-body regime.",
+      "W4417295272": "Shifts: how many channel uses quantum process tomography needs in diamond distance was open → it is settled, with matching upper and lower bounds. Channel learning reduces to pure-state tomography, unifying tomography of states, unitaries and measurements under one optimal framework.",
+      "W4411476832": "Shifts: microbial community dynamics seemed irreducibly high-dimensional → the dimension needed to reproduce observed dynamics is small and scales linearly with the number of observables. Gives an empirical rule for how complex a model of a partially observed ecosystem needs to be."
+    }
+  },
+  "foundation": {
+    "title": "Observables collapse many hidden processes into one",
+    "principle": "A measured signal is a projection: many internal states or pathways map onto the same observable, and the observable often tracks the fastest or most constrained component rather than the whole system. Greenland δ18O records a rapid atmospheric reorganisation, while the ocean circulation it was taken to represent moved over a century. In Drosophila, a stable genotype–phenotype map predicts which way pigmentation goes, but many different allele combinations can deliver it, so the responding loci are unpredictable. BMI likewise merges people with intact and failing organ function, whose mortality differs (HR 1.19 vs 1.69). The same many-to-one structure underlies proxy climate records, polygenic prediction, biomarkers and any model fitted to coarse outputs.",
+    "built_from": [
+      "W7225340455",
+      "W4415909975",
+      "W7225816748"
+    ],
+    "rests_on": [
+      "Fisher, R. A. (1918). The correlation between relatives on the supposition of Mendelian inheritance",
+      "Edelman, G. M. & Gally, J. A. (2001). Degeneracy and complexity in biological systems"
+    ],
+    "question": "Can we quantify, before measuring, how much of a system's hidden dynamics a given observable can and cannot identify?"
+  },
+  "consolidation": {
+    "W7225340455": {
+      "question": "Did glacial AMOC shifts really happen within a decade, as Greenland ice cores suggest?",
+      "approach": "Precisely dated Asian monsoon speleothem oxygen-isotope records combined with isotope-enabled modelling of DO warmings.",
+      "finding": "DO warmings unfolded over more than a century; Greenland captures a fast atmospheric shift triggered by northeastern North Atlantic sea-ice retreat.",
+      "implication": "Natural AMOC transitions were slower than assumed; 'abruptness' depends on which part of the climate system a proxy records."
+    },
+    "W7160602228": {
+      "question": "Are evaporating black holes singular once quantum effects violate the classical energy conditions?",
+      "approach": "Prove a singularity theorem using stable causality, past reflectivity and the Generalized Second Law instead of classical assumptions.",
+      "finding": "The theorem holds without global hyperbolicity or the null energy condition; standard evaporating black-hole models are null geodesically incomplete.",
+      "implication": "Semiclassical effects do not remove singularities by default; resolving them requires full quantum gravity."
+    },
+    "W4414992191": {
+      "question": "Can optical measurement precision be improved by engineering where Fisher information goes?",
+      "approach": "Theoretical perspective defining a Fisher-information flux vector and analysing its wave behaviour in scattering.",
+      "finding": "Information flow departs from energy flow, showing resonance, interference, vorticity, Talbot revivals and sub-diffraction focusing.",
+      "implication": "Metrology can be designed as information-flow engineering, from atomic diagnostics to LiDAR and radar."
+    },
+    "W4415909975": {
+      "question": "Can genomic data predict how a complex trait will evolve in real populations?",
+      "approach": "Tracked genome-wide allele frequencies and pigmentation in diverse Drosophila evolving in field mesocosms and the lab.",
+      "finding": "The genotype–phenotype map was stable and predicted direction of change, but responding loci were largely unpredictable.",
+      "implication": "Genomic prediction can forecast trait trajectories but not which genes will carry adaptation."
+    },
+    "W7225450878": {
+      "question": "Does intensive blood-pressure control prevent cardiovascular events after ischaemic stroke or TIA?",
+      "approach": "Open-label RCT at 30 Brazilian sites, 4368 patients; systolic target <120 vs <140 mm Hg; median 3.9 years.",
+      "finding": "Primary composite 10.9% vs 13.5% (HR 0.79, 95% CI 0.67–0.94); renal decline more common with intensive treatment.",
+      "implication": "Supports lower systolic targets in secondary stroke prevention, with renal monitoring."
+    },
+    "W4412998261": {
+      "question": "Why do algal blooms collapse synchronously when fewer than 30% of cells are virus-infected?",
+      "approach": "Synthetic algae–bacteria–virus communities from a bloom; new synergy and benefit indices; field observations of bloom collapse.",
+      "finding": "Bacteria, especially Alteromonas, strongly enhance virus-induced mortality in four algae and accumulate during oceanic bloom demise.",
+      "implication": "Viral–bacterial synergy is a new mortality agent shaping the balance of carbon recycling and export."
+    },
+    "W7225816748": {
+      "question": "Does the Lancet Commission's clinical/preclinical obesity framework outperform BMI-based classification?",
+      "approach": "Prevalence, incidence and mortality across 844,108 adults in Chinese, UK, US and Spanish cohorts.",
+      "finding": "BMI missed 5.2–8.6% of obesity; 77–91% of preclinical cases did not progress; mortality HR 1.69 clinical vs 1.19 preclinical.",
+      "implication": "Supports adopting function-based obesity diagnosis to target treatment."
+    },
+    "W7128118570": {
+      "question": "Do male managers' gender attitudes causally shape women's workplace outcomes?",
+      "approach": "Danish registry data; birth of a manager's first daughter versus son as a quasi-random shock; within-firm comparisons.",
+      "finding": "Women's relative earnings rose 4.4% and employment 2.9%, via substituting comparable female hires; firm performance unaffected.",
+      "implication": "Individual decision-makers' attitudes move workplace gender gaps quickly, without needing prolonged exposure."
+    },
+    "W4407278428": {
+      "question": "Can Cas9 edits and their transcriptional effects be measured together in single cells?",
+      "approach": "Superb-seq: label cut sites with a T7 promoter, in situ transcription, then single-cell RNA-seq across 35,000 cells.",
+      "finding": "In 10,000 K562 cells: 5,761 edited cells, all on-target and 36 off-target sites; 19 off-targets altered expression.",
+      "implication": "Enables cleaner perturbation screens and direct functional off-target assessment for genome editing."
+    },
+    "W7140326565": {
+      "question": "How does non-reciprocal coupling change the dynamics of excitations in the O(2) (XY) model?",
+      "approach": "Continuum theory from vision-cone lattice couplings, linked to Toner–Tu hydrodynamics; 1D and 2D perturbation analysis.",
+      "finding": "Non-reciprocity acts like activity; 1D excitations follow a generalised Burgers equation; winding excitations can relax to ground state.",
+      "implication": "Gives first principles for steering excitations in active and non-reciprocal media."
+    }
+  },
+  "figure_notes": {
+    "W4412998261": "Panels a and d–f show growth curves for four algae with and without virus, each with and without antibiotics. Compare infected cultures with bacteria present against antibiotic-treated ones: faster, deeper collapse when bacteria remain is the synergy. Panels b–c track bacterial and viral abundances alongside.",
+    "W7225816748": "Prevalence of obesity across four cohorts by definition: BMI alone, waist circumference, waist-to-height ratio, and the combined anthropometric definition. Read across bars within a cohort to see how many people BMI misclassifies, in both directions, and how the combined definition raises prevalence.",
+    "W4407278428": "Panel a shows the pipeline: Cas9 cuts, a T7 promoter is inserted at the break, in situ transcription reads it out alongside cellular RNA in single cells. Panels b–d quantify how efficiently different T7 promoter designs insert, with design 02 chosen, across many human cell samples.",
+    "W4414992191": "A plane wave scatters off a nanowire. Panel a shows where scattered energy goes (Poynting vector); panel b shows where information about the wire's x-position goes (Fisher-information flux). The two radiation patterns differ, so the best place to put a detector is not where the most light lands."
+  }
+}
