@@ -59,7 +59,15 @@ jobs:
           fi
           git commit -m "feed: $(date -u +%F)"
           for i in 1 2 3; do
-            git pull --rebase origin main && git push origin HEAD:main && exit 0
+            git fetch origin main
+            # A backup run can finish just after the first one pushed. Today's feed is already
+            # published, so stop here quietly instead of rebasing into a conflict and failing.
+            if [ "${{ github.event_name }}" = "schedule" ] && git cat-file -e "origin/main:data/days/$(date -u +%F).json" 2>/dev/null; then
+              echo "Today's feed was published by an earlier run — nothing to do."
+              exit 0
+            fi
+            git rebase origin/main && git push origin HEAD:main && exit 0
+            git rebase --abort 2>/dev/null || true
             sleep 5
           done
           exit 1
